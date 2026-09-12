@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Website page for the "Halloweentocht – Trick or Treat" event.
+        Rendered by the event's "Custom Website Page" field instead of the standard
+        website_event page. Dates, tickets, prices, location and organiser come from
+        the event.event record; the programme texts mirror the printed flyer.
+        The registration modal is provided by website_event.layout, so the standard
+        ticket selection and attendee form keep working.
+    -->
+    <template id="event_page_halloweentocht" name="Sterrenboom: Halloweentocht event page">
+        <t t-call="website_event.layout">
+            <t t-set="hide_submenu" t-value="True"/>
+            <t t-set="hide_register_cta" t-value="True"/>
+            <t t-set="page_tickets" t-value="event.event_ticket_ids.sorted('sequence')"/>
+            <t t-set="page_deadlines" t-value="page_tickets.filtered('end_sale_datetime').mapped('end_sale_datetime')"/>
+            <t t-set="page_deadline" t-value="page_deadlines and min(page_deadlines)"/>
+            <t t-set="modal_target" t-value="'#modal_%s_registration' % ('slot' if event.is_multi_slots else 'ticket')"/>
+
+            <div class="o_sterrenboom_halloween">
+
+                <!-- Header -->
+                <section class="o_sb_hero">
+                    <div class="container">
+                        <p class="o_sb_organisers text-uppercase small mb-1">
+                            Ferm Wortegem &amp; VBS De Sterrenboom
+                        </p>
+                        <p class="small mb-4">Directie, leerkrachten en oudercomité</p>
+                        <h1 class="o_sb_title display-3" t-field="event.name"/>
+                        <h2 class="o_sb_subtitle display-6 mt-2">Trick or Treat</h2>
+                        <div class="o_sb_date_badge">
+                            <i class="fa fa-calendar me-2" role="img" aria-label="Datum"/>
+                            <t t-out="event.date_begin"
+                               t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'EEEE d/MM'}"/>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Key facts -->
+                <section class="o_sb_facts pb-5">
+                    <div class="container">
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-clock-o mb-2" role="img" aria-label="Uur"/>
+                                    <div class="o_sb_fact_label">Vertrekken</div>
+                                    <div class="o_sb_fact_value">18.30 – 20.00 uur</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-music mb-2" role="img" aria-label="Gezinsfuif"/>
+                                    <div class="o_sb_fact_label">Gezinsfuif</div>
+                                    <div class="o_sb_fact_value">vanaf 19.30 uur</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-ticket mb-2" role="img" aria-label="Prijs"/>
+                                    <div class="o_sb_fact_label">Prijs</div>
+                                    <div class="o_sb_fact_value">
+                                        <t t-foreach="page_tickets" t-as="ticket">
+                                            <div>
+                                                <t t-out="ticket.name"/>
+                                                <t t-if="ticket.sterrenboom_price">
+                                                    € <t t-out="ticket.sterrenboom_price"
+                                                         t-options="{'widget': 'float', 'precision': 0}"/>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-map-marker mb-2" role="img" aria-label="Locatie"/>
+                                    <div class="o_sb_fact_label">Start</div>
+                                    <div class="o_sb_fact_value">
+                                        <t t-if="event.address_id" t-out="event.address_id.name"/>
+                                        <t t-else="">Kerk van Wortegem</t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Programme + registration -->
+                <section class="pb-5">
+                    <div class="container">
+                        <div class="row g-4">
+
+                            <div class="col-12 col-lg-6">
+                                <div class="o_sb_panel h-100">
+                                    <h2 class="h3 mb-4">
+                                        <i class="fa fa-star me-2" role="img" aria-label="Inbegrepen"/>Inbegrepen
+                                    </h2>
+                                    <ul class="o_sb_included list-unstyled mb-0">
+                                        <li><i class="fa fa-map-o" role="img" aria-label="Tocht"/>Halloweentocht</li>
+                                        <li><i class="fa fa-shopping-bag" role="img" aria-label="Zak"/>Halloweenzak + zaklamp</li>
+                                        <li><i class="fa fa-gift" role="img" aria-label="Snoep"/>Trick-or-treatsnoep</li>
+                                        <li><i class="fa fa-cutlery" role="img" aria-label="Eten"/>Ovenkoek met hesp &amp; groentjes</li>
+                                        <li><i class="fa fa-music" role="img" aria-label="Fuif"/>Gezinsfuif in de kerk</li>
+                                        <li><i class="fa fa-child" role="img" aria-label="Springkasteel"/>Springkasteel</li>
+                                        <li><i class="fa fa-glass" role="img" aria-label="Drankje"/>Gratis drankje bij verkleding</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6">
+                                <div id="inschrijven" class="o_sb_panel h-100">
+                                    <h2 class="h3 mb-2">
+                                        <i class="fa fa-pencil-square-o me-2" role="img" aria-label="Inschrijven"/>Schrijf hier in
+                                    </h2>
+                                    <p t-if="page_deadline" class="text-muted mb-4">
+                                        Inschrijven kan tot en met
+                                        <b t-out="page_deadline"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'EEEE d MMMM y'}"/>.
+                                    </p>
+
+                                    <div class="d-flex flex-column gap-2 mb-4">
+                                        <div t-foreach="page_tickets" t-as="ticket" class="o_sb_ticket">
+                                            <div>
+                                                <div class="fw-bold" t-out="ticket.name"/>
+                                                <small t-if="ticket.description" class="text-muted" t-out="ticket.description"/>
+                                                <div t-if="ticket.is_expired" class="small text-danger">Inschrijvingen afgesloten</div>
+                                                <div t-elif="ticket.is_sold_out" class="small text-danger">Volzet</div>
+                                            </div>
+                                            <div t-if="ticket.sterrenboom_price" class="o_sb_ticket_price">
+                                                € <t t-out="ticket.sterrenboom_price"
+                                                     t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div t-if="registration_error_code == 'insufficient_seats'" class="alert alert-danger" role="alert">
+                                        Inschrijven mislukt: deze tickets zijn niet meer beschikbaar.
+                                    </div>
+                                    <div t-if="registration_error_code == 'recaptcha_failed'" class="alert alert-danger" role="alert">
+                                        Inschrijven mislukt: Google reCaptcha heeft verdachte activiteit gedetecteerd.
+                                    </div>
+
+                                    <t t-if="event.event_registrations_open">
+                                        <button type="button" class="btn o_sb_register_btn w-100"
+                                                data-bs-toggle="modal" t-att-data-bs-target="modal_target">
+                                            <i class="fa fa-ticket me-2" role="img" aria-label="Tickets"/>Inschrijven
+                                        </button>
+                                        <p class="small text-muted mt-3 mb-0">
+                                            Kies het aantal volwassenen en kinderen en vul per deelnemer naam,
+                                            e-mailadres en telefoonnummer in. De betaling regelt het oudercomité
+                                            achteraf, niet via deze website.
+                                        </p>
+                                    </t>
+                                    <t t-else="" t-call="website_event.registration_template"/>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Practical information -->
+                <section class="pb-5">
+                    <div class="container">
+                        <div class="o_sb_panel">
+                            <h2 class="h3 mb-4">
+                                <i class="fa fa-info-circle me-2" role="img" aria-label="Praktisch"/>Praktisch
+                            </h2>
+                            <div class="row g-4">
+                                <div class="col-12 col-md-4">
+                                    <h3 class="h6 text-uppercase text-muted">Wanneer</h3>
+                                    <div class="fw-bold text-capitalize"
+                                         t-out="event.date_begin"
+                                         t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'EEEE d MMMM y'}"/>
+                                    <div>
+                                        <t t-out="event.date_begin"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH:mm'}"/>
+                                        –
+                                        <t t-out="event.date_end"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH:mm'}"/>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <a t-if="google_url" t-att-href="google_url" target="_blank" rel="noopener" class="me-3">
+                                            <i class="fa fa-google me-1" role="img" aria-label="Google"/>Google Agenda
+                                        </a>
+                                        <a t-if="iCal_url" t-att-href="iCal_url">
+                                            <i class="fa fa-calendar-plus-o me-1" role="img" aria-label="iCal"/>iCal / Outlook
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <h3 class="h6 text-uppercase text-muted">Waar</h3>
+                                    <t t-if="event.address_id">
+                                        <div class="fw-bold" t-out="event.address_id.name"/>
+                                        <div t-field="event.address_id"
+                                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                                        <a t-att-href="event._google_map_link()" target="_blank" rel="noopener" class="small">
+                                            <i class="fa fa-location-arrow me-1" role="img" aria-label="Route"/>Routebeschrijving
+                                        </a>
+                                    </t>
+                                    <div t-else="" class="fw-bold">Kerk van Wortegem</div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <h3 class="h6 text-uppercase text-muted">Organisatie</h3>
+                                    <div class="fw-bold">Ferm Wortegem &amp; VBS De Sterrenboom</div>
+                                    <div class="small">Directie, leerkrachten en oudercomité</div>
+                                    <div t-if="event.organizer_id" class="small mt-2"
+                                         t-field="event.organizer_id"
+                                         t-options="{'widget': 'contact', 'fields': ['email', 'phone']}"/>
+                                </div>
+                            </div>
+
+                            <div t-if="event.description" class="mt-4 pt-4 border-top"
+                                 t-field="event.description"/>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>
