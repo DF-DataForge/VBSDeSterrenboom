@@ -32,6 +32,9 @@ Odoo 19 renamed a lot. When writing or reviewing code here:
 - `ir.rule` still uses the `groups` field.
 - `groups=` and `web_icon=` attributes on `<menuitem>` are unchanged.
 - No `attrs=` / `states=`: use direct expressions, e.g. `invisible="state != 'planned'"`.
+- Search views: the group-by container is a bare `<group>`; `expand=` and `string=` on it
+  fail RNG validation ("Invalid attribute expand for element group").
+- Give every field a distinct label per model, otherwise Odoo logs a "same label" warning.
 - Translations: `_("text %s", value)`, never `%`-interpolation inside `_()`.
 
 Check `https://raw.githubusercontent.com/odoo/odoo/19.0/...` when unsure; the rendered

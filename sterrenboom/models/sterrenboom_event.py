@@ -25,7 +25,7 @@ class SterrenboomEvent(models.Model):
         string='Attendees',
     )
     attendee_count = fields.Integer(
-        string='Attendees',
+        string='Attendee Count',
         compute='_compute_attendee_count',
         store=True,
     )

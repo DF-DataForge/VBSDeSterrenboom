@@ -24,6 +24,11 @@ lets visitors register. Requires a module upgrade and installs `website_event`.
   calendar links and the registration button.
 - Tests for the event data and for the custom / standard page routing.
 
+### Fixed
+- Member and event search views failed Odoo 19 view validation (`expand`/`string`
+  on the group-by `<group>`), which blocked installing the module.
+- `attendee_count` relabelled *Attendee Count* to stop the duplicate-label warning.
+
 ### Changed
 - *Sterrenboom / User* now implies *Events / User* and *Sterrenboom / Manager* implies
   *Events / Administrator*, so committee members can follow up website registrations.
