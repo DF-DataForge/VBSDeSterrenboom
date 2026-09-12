@@ -1,4 +1,5 @@
 from odoo.exceptions import ValidationError
+from odoo.fields import Command
 from odoo.tests.common import TransactionCase, tagged
 
 
@@ -44,9 +45,9 @@ class TestSterrenboomEvent(TransactionCase):
         self.assertTrue(event.date_end)
 
     def test_attendee_count_is_stored_and_recomputed(self):
-        event = self._make_event(member_ids=[(4, self.member.id)])
+        event = self._make_event(member_ids=[Command.link(self.member.id)])
         self.assertEqual(event.attendee_count, 1)
-        event.member_ids = [(5, 0, 0)]
+        event.member_ids = [Command.clear()]
         self.assertEqual(event.attendee_count, 0)
 
     def test_state_is_not_copied_on_duplicate(self):
