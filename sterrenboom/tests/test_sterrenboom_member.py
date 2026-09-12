@@ -1,5 +1,6 @@
 from psycopg2 import IntegrityError
 
+from odoo.fields import Command
 from odoo.tests.common import TransactionCase, tagged
 from odoo.tools import mute_logger
 
@@ -19,14 +20,16 @@ class TestSterrenboomMember(TransactionCase):
 
     def test_email_must_be_unique(self):
         self.Member.create({'name': 'First', 'email': 'dup@example.com'})
-        with self.assertRaises(IntegrityError), mute_logger('odoo.sql_db'):
-            with self.env.cr.savepoint():
+        with self.assertRaises(IntegrityError):
+            with mute_logger('odoo.sql_db'), self.env.cr.savepoint():
                 self.Member.create({'name': 'Second', 'email': 'dup@example.com'})
+                self.env.flush_all()
 
     def test_members_without_email_are_allowed(self):
         """A NULL email must not collide with the unique constraint."""
         self.Member.create({'name': 'No Email One'})
         self.Member.create({'name': 'No Email Two'})
+        self.env.flush_all()
 
     def test_event_count_tracks_linked_events(self):
         member = self.Member.create({'name': 'Counted Member'})
@@ -34,7 +37,7 @@ class TestSterrenboomMember(TransactionCase):
         self.env['sterrenboom.event'].create({
             'name': 'Linked Event',
             'date': '2026-01-01 19:00:00',
-            'member_ids': [(4, member.id)],
+            'member_ids': [Command.link(member.id)],
         })
         self.assertEqual(member.event_count, 1)
 
