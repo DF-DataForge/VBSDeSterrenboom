@@ -23,6 +23,11 @@ installs `event_sale`, `website_event_sale`, `account_qr_code_sepa` and `l10n_be
 - Install/upgrade hook that puts sale journals of a Belgian company on the
   `+++000/0000/00000+++` communication standard when they still use Odoo's default.
 
+### Fixed
+- The payment-instructions mail template compared the due date with an unset invoice
+  date, which made the module upgrade fail on databases that already hold a draft
+  invoice (Odoo validates a mail template against an existing record when saving it).
+
 ### Changed
 - Ticket prices moved from `event.event.ticket.sterrenboom_price` to the standard
   `price` field from `event_sale`, so the website, the sales order and the invoice all

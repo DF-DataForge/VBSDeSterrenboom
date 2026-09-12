@@ -64,8 +64,9 @@
                                         <dt class="col-sm-5">Gestructureerde mededeling</dt>
                                         <dd class="col-sm-7 fw-bold text-break"
                                             t-out="sterrenboom_payment['communication']"/>
-                                        <t t-if="sterrenboom_payment['invoice'].invoice_date_due
-                                                 &gt; sterrenboom_payment['invoice'].invoice_date">
+                                        <t t-set="sb_invoice" t-value="sterrenboom_payment['invoice']"/>
+                                        <t t-if="sb_invoice.invoice_date_due and (not sb_invoice.invoice_date
+                                                 or sb_invoice.invoice_date_due &gt; sb_invoice.invoice_date)">
                                             <dt class="col-sm-5">Te betalen tegen</dt>
                                             <dd class="col-sm-7"
                                                 t-out="sterrenboom_payment['invoice'].invoice_date_due"
