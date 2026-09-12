@@ -1,20 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Show the committee's ticket price inside the standard registration modal. -->
-    <template id="modal_ticket_registration_price"
-              name="Sterrenboom: ticket price in registration modal"
-              inherit_id="website_event.modal_ticket_registration">
-        <xpath expr="//div[@id='o_wevent_tickets_collapse']//h5[@itemprop='name']" position="after">
-            <div t-if="ticket.sterrenboom_price" class="fw-bold" itemprop="price"
-                 t-att-content="ticket.sterrenboom_price">
-                € <t t-out="ticket.sterrenboom_price" t-options="{'widget': 'float', 'precision': 2}"/>
+    <!--
+        The registration never goes through an online payment: SterrenboomWebsiteEventController
+        confirms and invoices the order, then shows the confirmation page. Replace the whole
+        footer website_event_sale built ("Go to Payment", and a "Sign In" button when
+        eCommerce asks for an account at checkout) with a plain confirm button.
+    -->
+    <template id="registration_attendee_details_confirm"
+              name="Sterrenboom: confirm instead of pay"
+              inherit_id="website_event.registration_attendee_details">
+        <xpath expr="//div[hasclass('modal-footer')]" position="replace">
+            <div class="modal-footer border-top">
+                <button type="button" class="btn btn-secondary js_goto_event"
+                        data-bs-dismiss="modal">Annuleren</button>
+                <button t-if="availability_check and limit_check" type="submit"
+                        class="btn btn-primary">Bevestig inschrijving</button>
             </div>
         </xpath>
-        <xpath expr="//h5[hasclass('o_wevent_single_ticket_name')]" position="after">
-            <div t-if="tickets and tickets.sterrenboom_price" class="fw-bold" itemprop="price"
-                 t-att-content="tickets.sterrenboom_price">
-                € <t t-out="tickets.sterrenboom_price" t-options="{'widget': 'float', 'precision': 2}"/>
+    </template>
+
+    <!--
+        Bank transfer panel on the standard confirmation page. `sterrenboom_payment` is
+        filled in by SterrenboomWebsiteEventController._get_registration_confirm_values()
+        and is empty for free registrations or when no invoice could be created.
+    -->
+    <template id="registration_complete_payment"
+              name="Sterrenboom: payment instructions on the confirmation page"
+              inherit_id="website_event.registration_complete">
+        <xpath expr="//div[hasclass('o_wereg_confirmed')]/div[hasclass('row')]" position="after">
+            <div t-if="sterrenboom_payment" class="row mb-4 o_sb_payment">
+                <div class="col-12">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h2 class="h5 card-title">Nog te betalen</h2>
+                            <p class="text-muted">
+                                Schrijf het bedrag over met de gestructureerde mededeling hieronder,
+                                of scan de QR-code met je bankapp. Je krijgt deze gegevens ook per
+                                e-mail. Zodra je betaling binnen is, is alles in orde.
+                            </p>
+                            <div class="row g-4 align-items-center">
+                                <div class="col-12 col-md-auto text-center">
+                                    <img t-if="sterrenboom_payment['qr_code']"
+                                         t-att-src="sterrenboom_payment['qr_code']"
+                                         alt="QR-code om te betalen met je bankapp"
+                                         class="img-fluid" style="width: 150px;"/>
+                                </div>
+                                <div class="col-12 col-md">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-5">Bedrag</dt>
+                                        <dd class="col-sm-7">
+                                            <span t-out="sterrenboom_payment['amount']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': sterrenboom_payment['currency']}"/>
+                                        </dd>
+                                        <t t-if="sterrenboom_payment['bank']">
+                                            <dt class="col-sm-5">Rekening (IBAN)</dt>
+                                            <dd class="col-sm-7" t-out="sterrenboom_payment['bank'].acc_number"/>
+                                            <dt class="col-sm-5">Begunstigde</dt>
+                                            <dd class="col-sm-7"
+                                                t-out="sterrenboom_payment['bank'].acc_holder_name
+                                                       or sterrenboom_payment['bank'].partner_id.name"/>
+                                        </t>
+                                        <dt class="col-sm-5">Gestructureerde mededeling</dt>
+                                        <dd class="col-sm-7 fw-bold text-break"
+                                            t-out="sterrenboom_payment['communication']"/>
+                                        <t t-if="sterrenboom_payment['invoice'].invoice_date_due
+                                                 &gt; sterrenboom_payment['invoice'].invoice_date">
+                                            <dt class="col-sm-5">Te betalen tegen</dt>
+                                            <dd class="col-sm-7"
+                                                t-out="sterrenboom_payment['invoice'].invoice_date_due"
+                                                t-options="{'widget': 'date'}"/>
+                                        </t>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </xpath>
     </template>

@@ -18,23 +18,27 @@ technical name, so the repo can be cloned straight onto a server without renamin
 VBSDeSterrenboom/            <- add THIS folder to addons_path
 ├── sterrenboom/             <- the addon (technical name: sterrenboom)
 │   ├── __manifest__.py
+│   ├── hooks.py                    <- install-time accounting configuration
 │   ├── controllers/
-│   │   └── main.py                 <- serves an event's custom website page
+│   │   └── main.py                 <- custom event page + the registration flow
 │   ├── models/
 │   │   ├── sterrenboom_member.py
 │   │   ├── sterrenboom_event.py
 │   │   ├── event_event.py          <- event.event: Custom Website Page
-│   │   └── event_ticket.py         <- event.event.ticket: Price (€)
+│   │   ├── event_registration.py   <- registration -> invoice + payment mail
+│   │   ├── sale_order.py           <- confirm + invoice a registration order
+│   │   └── account_move.py         <- IBAN, communication and SEPA QR-code
 │   ├── views/
 │   │   ├── sterrenboom_member_views.xml
 │   │   ├── sterrenboom_event_views.xml
 │   │   ├── sterrenboom_menus.xml
 │   │   ├── event_event_views.xml
-│   │   ├── event_ticket_views.xml
-│   │   ├── event_templates.xml                <- price in the registration modal
+│   │   ├── event_templates.xml                <- confirmation page payment panel
 │   │   └── event_halloweentocht_templates.xml <- the Halloweentocht web page
 │   ├── data/
+│   │   ├── mail_template_data.xml             <- payment instructions mail
 │   │   └── event_halloweentocht_data.xml      <- the event, its tickets and location
+│   ├── migrations/                 <- upgrade scripts per manifest version
 │   ├── security/
 │   │   ├── sterrenboom_groups.xml
 │   │   └── ir.model.access.csv
@@ -139,13 +143,47 @@ The module depends on `website_event` and extends it:
 | Model | Field | Notes |
 | --- | --- | --- |
 | `event.event` | `sterrenboom_page_view_id` | *Custom Website Page*: a QWeb template rendered instead of the standard event page |
-| `event.event.ticket` | `sterrenboom_price` | *Price (€)*, shown on the website; must be ≥ 0 |
+
+Ticket prices are the standard `event.event.ticket.price` from `event_sale`, so the
+same number ends up on the website, on the sales order and on the invoice.
 
 When an event has a custom page, opening its website URL (`/event/<slug>`) renders that
 template with the same context as the standard page. The template wraps
 `website_event.layout`, so the standard ticket modal, attendee form and confirmation
 page are reused; only the presentation is custom. Events without a custom page are
 untouched.
+
+## Registration and payment flow
+
+Registrations are paid by bank transfer, never on the website. After a visitor fills in
+the attendee details and confirms:
+
+1. `website_event_sale` puts the tickets in a sales order and creates one registration
+   per attendee, linked to their order line.
+2. `sale.order._sterrenboom_invoice_registrations()` confirms that order, creates its
+   customer invoice and posts it. Posting is what generates the **structured
+   communication** (`payment_reference`) and makes the receivable visible to Accounting.
+3. The visitor is redirected straight to the standard confirmation page, which now also
+   shows the amount, the IBAN, the structured communication and a **SEPA credit transfer
+   QR-code** — the same QR-code Odoo prints on an invoice PDF, so any banking app can
+   scan it.
+4. The attendees are mailed the same instructions
+   (`sterrenboom.mail_template_registration_payment`), with a portal link to the invoice.
+
+When the transfer arrives, the bank statement line carries the structured
+communication, so Accounting reconciles it against the invoice without manual matching.
+
+### What the committee has to configure once
+
+| Where | Setting |
+| --- | --- |
+| **Settings → Users & Companies → Companies** | a bank account with the committee's IBAN, and the company country set to Belgium. Mark the account as trusted (*Send Money*), otherwise Odoo strips it from the invoice when the public website posts it — the page and the mail still show the IBAN, but the invoice PDF will not |
+| **Accounting → Configuration → Journals → Customer Invoices** | *Communication Standard* = `Belgium (+++000/2024/00182+++)`. The module sets this on install/upgrade for Belgian companies that still use Odoo's default |
+| **Inventory/Sales → Products** | the ticket products must be *Invoiced on ordered quantities*, otherwise nothing is invoiceable at confirmation |
+| Ticket taxes | the committee is normally not VAT liable — leave *Customer Taxes* empty on the ticket products so the invoiced amount equals the ticket price |
+
+Free tickets (price 0) keep the plain `website_event` behaviour: no order, no invoice,
+no payment panel.
 
 ## Halloweentocht – Trick or Treat
 
@@ -161,8 +199,19 @@ reverting the changes:
 | Website | published, custom page `sterrenboom.event_page_halloweentocht` |
 
 The flyer does not mention an end time or a street address; both can be adjusted on the
-event record. Payment is not handled through the website: tickets only carry a
-displayed price, no eCommerce modules are installed.
+event record. Payment is not collected on the website: confirming a registration creates
+the sales order and the invoice, and the attendee transfers the amount with the
+structured communication they get on screen and by mail.
+
+### Flyer header image
+
+Drop the flyer artwork at **`sterrenboom/static/src/img/halloweentocht.png`** and the page
+uses it as its introduction instead of the typographic title (a visually hidden `<h1>`
+keeps the page readable for screen readers and search engines). While the file is absent
+the page falls back to the text header, so nothing breaks before the artwork is added.
+
+The page also hides the website navigation bar (`no_header`), so only the event itself is
+shown.
 
 After upgrading the module: **Events → Halloweentocht → Go to Website** opens the page.
 To add the flyer image as cover, use the website editor's cover options on that page.

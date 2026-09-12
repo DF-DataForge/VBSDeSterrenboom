@@ -3,6 +3,45 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.3.0.0] — 2026-09-12
+
+Website registrations now produce a confirmed sales order and a posted customer invoice,
+so the attendee gets bank transfer instructions with a structured communication and
+Accounting reconciles the payment on its own. Requires a module upgrade; the upgrade
+installs `event_sale`, `website_event_sale`, `account_qr_code_sepa` and `l10n_be`.
+
+### Added
+- Confirming the attendee form no longer sends the visitor to the eCommerce checkout:
+  the order is confirmed and invoiced, and the confirmation page shows the amount, the
+  IBAN, the **structured communication** and a scannable **SEPA credit transfer QR-code**
+  (the same one Odoo prints on an invoice PDF).
+- `sterrenboom.mail_template_registration_payment`: the attendees are mailed the same
+  payment instructions, with a portal link to the invoice.
+- `sale.order._sterrenboom_invoice_registrations()`, `account.move._sterrenboom_payment_values()`
+  / `_sterrenboom_payment_qr_code()` and `event.registration._sterrenboom_payment_values()`
+  / `_sterrenboom_send_payment_instructions()`.
+- Install/upgrade hook that puts sale journals of a Belgian company on the
+  `+++000/0000/00000+++` communication standard when they still use Odoo's default.
+
+### Changed
+- Ticket prices moved from `event.event.ticket.sterrenboom_price` to the standard
+  `price` field from `event_sale`, so the website, the sales order and the invoice all
+  quote the same amount. A migration copies existing values across; check
+  **Events → Halloweentocht → Tickets** after upgrading.
+- The Halloweentocht page no longer repeats the ticket description under each ticket
+  name, and explains that the payment details arrive on screen and by mail.
+- The Halloweentocht page hides the website navigation bar, so only the event is shown.
+- The page uses `static/src/img/halloweentocht.png` as its header when that file is
+  present, and falls back to the typographic title while it is not.
+
+### Fixed
+- The Halloweentocht title overflowed the screen on a phone: the hero title, subtitle,
+  date badge, panels and ticket rows now scale with the viewport instead of using fixed
+  heading sizes.
+
+### Removed
+- `event.event.ticket.sterrenboom_price` and its views, superseded by `price`.
+
 ## [19.0.2.0.0] — 2026-09-12
 
 Publishes the *Halloweentocht – Trick or Treat* event (Friday 23 October 2026) through
