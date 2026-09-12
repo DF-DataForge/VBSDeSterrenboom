@@ -26,9 +26,14 @@ ignore = [
 "**/__init__.py" = ["F401"]
 
 [tool.ruff.lint.isort]
-known-third-party = ["odoo"]
+# Odoo imports get their own block after real third-party packages, which is how
+# Odoo itself and every OCA repo orders them.
+known-first-party = ["odoo"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
+# `ruff format` is available but deliberately NOT enforced in pre-commit/CI: its
+# defaults disagree with Odoo's own style in enough places that turning it on would
+# create churn against upstream. Run it by hand if you want it.
 [tool.ruff.format]
 quote-style = "single"
 indent-style = "space"

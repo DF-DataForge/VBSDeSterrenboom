@@ -80,7 +80,7 @@ docker compose run --rm --no-deps odoo odoo --db_host=db --db_user=odoo --db_pas
 
 ## Code quality
 
-`pre-commit` runs ruff (lint + format) and `pylint-odoo` with Odoo 19 checks enabled:
+`pre-commit` runs ruff (lint) and `pylint-odoo` with Odoo 19 checks enabled:
 
 ```bash
 pip install pre-commit

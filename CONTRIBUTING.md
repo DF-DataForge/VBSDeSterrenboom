@@ -8,6 +8,10 @@ pre-commit run --all-files
 
 CI will reject anything the hooks would have fixed, so run them locally first.
 
+`ruff format` is configured in `pyproject.toml` but intentionally **not** wired into
+pre-commit or CI — its defaults disagree with Odoo's own style in enough places to cause
+pointless churn. Run `ruff format .` by hand if you want it on a file you own.
+
 ## Branches and commits
 
 - `main` is deployable at all times; CloudPepper pulls from it.
