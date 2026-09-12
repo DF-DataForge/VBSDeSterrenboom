@@ -77,7 +77,9 @@
                                     <i class="fa fa-map-marker mb-2" role="img" aria-label="Locatie"/>
                                     <div class="o_sb_fact_label">Start</div>
                                     <div class="o_sb_fact_value">
-                                        <t t-if="event.address_id" t-out="event.address_id.name"/>
+                                        <!-- t-field: the many2one widget reads the partner with sudo,
+                                             so public visitors can see the venue name -->
+                                        <span t-if="event.address_id" t-field="event.address_id"/>
                                         <t t-else="">Kerk van Wortegem</t>
                                     </div>
                                 </div>
@@ -192,7 +194,7 @@
                                 <div class="col-12 col-md-4">
                                     <h3 class="h6 text-uppercase text-muted">Waar</h3>
                                     <t t-if="event.address_id">
-                                        <div class="fw-bold" t-out="event.address_id.name"/>
+                                        <div class="fw-bold" t-field="event.address_id"/>
                                         <div t-field="event.address_id"
                                              t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
                                         <a t-att-href="event._google_map_link()" target="_blank" rel="noopener" class="small">
