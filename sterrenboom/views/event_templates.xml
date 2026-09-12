@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Show the committee's ticket price inside the standard registration modal. -->
+    <template id="modal_ticket_registration_price"
+              name="Sterrenboom: ticket price in registration modal"
+              inherit_id="website_event.modal_ticket_registration">
+        <xpath expr="//div[@id='o_wevent_tickets_collapse']//h5[@itemprop='name']" position="after">
+            <div t-if="ticket.sterrenboom_price" class="fw-bold" itemprop="price"
+                 t-att-content="ticket.sterrenboom_price">
+                € <t t-out="ticket.sterrenboom_price" t-options="{'widget': 'float', 'precision': 2}"/>
+            </div>
+        </xpath>
+        <xpath expr="//h5[hasclass('o_wevent_single_ticket_name')]" position="after">
+            <div t-if="tickets and tickets.sterrenboom_price" class="fw-bold" itemprop="price"
+                 t-att-content="tickets.sterrenboom_price">
+                € <t t-out="tickets.sterrenboom_price" t-options="{'widget': 'float', 'precision': 2}"/>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

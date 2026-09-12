@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Halloweentocht – Trick or Treat, Friday 23 October 2026.
+            Created once at install/upgrade (noupdate): the committee edits the live
+            record in Events afterwards, and upgrades will not overwrite those edits.
+            All datetimes are stored in UTC; Belgium is on CEST (UTC+2) until 25/10/2026.
+        -->
+
+        <record id="partner_kerk_wortegem" model="res.partner">
+            <field name="name">Kerk van Wortegem</field>
+            <field name="is_company" eval="True"/>
+            <field name="city">Wortegem-Petegem</field>
+            <field name="zip">9790</field>
+            <field name="country_id" ref="base.be"/>
+        </record>
+
+        <record id="partner_ferm_wortegem" model="res.partner">
+            <field name="name">Ferm Wortegem</field>
+            <field name="is_company" eval="True"/>
+            <field name="city">Wortegem-Petegem</field>
+            <field name="zip">9790</field>
+            <field name="country_id" ref="base.be"/>
+        </record>
+
+        <record id="event_halloweentocht_2026" model="event.event">
+            <field name="name">Halloweentocht</field>
+            <field name="subtitle">Trick or Treat – Ferm Wortegem &amp; VBS De Sterrenboom</field>
+            <field name="date_tz">Europe/Brussels</field>
+            <!-- 23/10/2026 18:30 – 23:00 Europe/Brussels -->
+            <field name="date_begin">2026-10-23 16:30:00</field>
+            <field name="date_end">2026-10-23 21:00:00</field>
+            <field name="address_id" ref="partner_kerk_wortegem"/>
+            <field name="seats_limited" eval="False"/>
+            <field name="website_published" eval="True"/>
+            <field name="sterrenboom_page_view_id" ref="event_page_halloweentocht"/>
+            <field name="description" type="html">
+                <div class="oe_structure">
+                    <p class="lead">
+                        Ferm Wortegem en VBS De Sterrenboom (directie, leerkrachten en oudercomité)
+                        nodigen je uit op de Halloweentocht – Trick or Treat op vrijdag 23 oktober.
+                    </p>
+                    <p>
+                        We vertrekken tussen 18.30 en 20.00 uur aan de kerk van Wortegem. Vanaf
+                        19.30 uur is er een gezinsfuif in de kerk, met springkasteel.
+                    </p>
+                    <p>
+                        Inbegrepen: halloweentocht, halloweenzak met zaklamp, trick-or-treatsnoep,
+                        ovenkoek met hesp en groentjes, gezinsfuif in de kerk, springkasteel en een
+                        gratis drankje als je verkleed komt.
+                    </p>
+                    <p>Volwassenen € 12 – kinderen € 10. Schrijf in vóór 17 oktober.</p>
+                </div>
+            </field>
+        </record>
+
+        <record id="event_halloweentocht_2026_ticket_adult" model="event.event.ticket">
+            <field name="event_id" ref="event_halloweentocht_2026"/>
+            <field name="sequence">1</field>
+            <field name="name">Volwassene</field>
+            <field name="description">Tocht, halloweenzak met zaklamp, snoep, ovenkoek met hesp en groentjes en de gezinsfuif.</field>
+            <field name="sterrenboom_price">12.0</field>
+            <!-- Registrations close before 17/10/2026 (23:59:59 Europe/Brussels) -->
+            <field name="end_sale_datetime">2026-10-16 21:59:59</field>
+        </record>
+
+        <record id="event_halloweentocht_2026_ticket_child" model="event.event.ticket">
+            <field name="event_id" ref="event_halloweentocht_2026"/>
+            <field name="sequence">2</field>
+            <field name="name">Kind</field>
+            <field name="description">Tocht, halloweenzak met zaklamp, snoep, ovenkoek met hesp en groentjes, springkasteel en de gezinsfuif.</field>
+            <field name="sterrenboom_price">10.0</field>
+            <field name="end_sale_datetime">2026-10-16 21:59:59</field>
+        </record>
+
+    </data>
+</odoo>

@@ -55,6 +55,8 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install module with demo data and run its tests
+        # The odoo image's default shell is dash, which has no `pipefail`.
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/odoo-data
@@ -81,6 +83,7 @@ jobs:
           fi
 
       - name: Verify the module also upgrades cleanly
+        shell: bash
         run: |
           set -euo pipefail
           odoo \

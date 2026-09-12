@@ -64,7 +64,7 @@
                 <field name="email"/>
                 <field name="role"/>
                 <filter name="filter_inactive" string="Archived" domain="[('active', '=', False)]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_by_role" string="Role" context="{'group_by': 'role'}"/>
                 </group>
             </search>

@@ -23,7 +23,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Odoo manifests are a bare dict literal, and __init__ files are import-only.
 "**/__manifest__.py" = ["B018"]
-"**/__init__.py" = ["F401"]
+# Odoo convention is one `from . import x` per line, which isort would merge (I001).
+"**/__init__.py" = ["F401", "I001"]
 
 [tool.ruff.lint.isort]
 # Odoo imports get their own block after real third-party packages, which is how
@@ -55,7 +56,6 @@ enable = [
     "attribute-string-redundant",
     "consider-merging-classes-inherited",
     "development-status-allowed",
-    "external-dependency-not-installed",
     "invalid-commit",
     "manifest-author-string",
     "manifest-data-duplicated",

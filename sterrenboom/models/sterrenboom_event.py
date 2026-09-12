@@ -13,10 +13,10 @@ class SterrenboomEvent(models.Model):
     name = fields.Char(string='Event Name', required=True, tracking=True)
     date = fields.Datetime(string='Start', required=True, tracking=True)
     date_end = fields.Datetime(string='End', tracking=True)
-    location = fields.Char(string='Location')
-    description = fields.Html(string='Description')
+    location = fields.Char()
+    description = fields.Html()
     notes = fields.Html(string='Internal Notes')
-    active = fields.Boolean(string='Active', default=True)
+    active = fields.Boolean(default=True)
     member_ids = fields.Many2many(
         comodel_name='sterrenboom.member',
         relation='sterrenboom_event_member_rel',
@@ -25,7 +25,6 @@ class SterrenboomEvent(models.Model):
         string='Attendees',
     )
     attendee_count = fields.Integer(
-        string='Attendees',
         compute='_compute_attendee_count',
         store=True,
     )

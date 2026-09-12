@@ -5,8 +5,9 @@
 [![License: LGPL-3](https://img.shields.io/badge/license-LGPL--3-blue)](LICENSE)
 
 Odoo 19 addon for managing the parent committee (oudercomité) of VBS De Sterrenboom:
-a member register with committee roles, and event planning with attendee tracking,
-a status workflow, chatter and scheduled activities.
+a member register with committee roles, event planning with attendee tracking,
+a status workflow, chatter and scheduled activities, and custom website pages for
+events published through the Odoo Events app (currently the *Halloweentocht*).
 
 ## Repository layout
 
@@ -17,16 +18,27 @@ technical name, so the repo can be cloned straight onto a server without renamin
 VBSDeSterrenboom/            <- add THIS folder to addons_path
 ├── sterrenboom/             <- the addon (technical name: sterrenboom)
 │   ├── __manifest__.py
+│   ├── controllers/
+│   │   └── main.py                 <- serves an event's custom website page
 │   ├── models/
 │   │   ├── sterrenboom_member.py
-│   │   └── sterrenboom_event.py
+│   │   ├── sterrenboom_event.py
+│   │   ├── event_event.py          <- event.event: Custom Website Page
+│   │   └── event_ticket.py         <- event.event.ticket: Price (€)
 │   ├── views/
 │   │   ├── sterrenboom_member_views.xml
 │   │   ├── sterrenboom_event_views.xml
-│   │   └── sterrenboom_menus.xml
+│   │   ├── sterrenboom_menus.xml
+│   │   ├── event_event_views.xml
+│   │   ├── event_ticket_views.xml
+│   │   ├── event_templates.xml                <- price in the registration modal
+│   │   └── event_halloweentocht_templates.xml <- the Halloweentocht web page
+│   ├── data/
+│   │   └── event_halloweentocht_data.xml      <- the event, its tickets and location
 │   ├── security/
 │   │   ├── sterrenboom_groups.xml
 │   │   └── ir.model.access.csv
+│   ├── static/src/scss/event_halloweentocht.scss
 │   ├── demo/
 │   ├── tests/
 │   └── static/description/icon.png
@@ -120,14 +132,49 @@ the module on a clean Odoo 19.0 container and runs its tests.
 Both models inherit `mail.thread` and `mail.activity.mixin`, so they have chatter,
 followers and scheduled activities.
 
+### Extensions of the Odoo Events app
+
+The module depends on `website_event` and extends it:
+
+| Model | Field | Notes |
+| --- | --- | --- |
+| `event.event` | `sterrenboom_page_view_id` | *Custom Website Page*: a QWeb template rendered instead of the standard event page |
+| `event.event.ticket` | `sterrenboom_price` | *Price (€)*, shown on the website; must be ≥ 0 |
+
+When an event has a custom page, opening its website URL (`/event/<slug>`) renders that
+template with the same context as the standard page. The template wraps
+`website_event.layout`, so the standard ticket modal, attendee form and confirmation
+page are reused; only the presentation is custom. Events without a custom page are
+untouched.
+
+## Halloweentocht – Trick or Treat
+
+`data/event_halloweentocht_data.xml` creates the event from the 2026 flyer once
+(`noupdate`), so the committee can edit it afterwards in **Events** without an upgrade
+reverting the changes:
+
+| | |
+| --- | --- |
+| When | Friday 23 October 2026, 18:30 – 23:00 (Europe/Brussels); departures 18:30 – 20:00, family party from 19:30 |
+| Where | Kerk van Wortegem, 9790 Wortegem-Petegem |
+| Tickets | *Volwassene* € 12, *Kind* € 10; registrations close 16 October 2026 at 23:59 |
+| Website | published, custom page `sterrenboom.event_page_halloweentocht` |
+
+The flyer does not mention an end time or a street address; both can be adjusted on the
+event record. Payment is not handled through the website: tickets only carry a
+displayed price, no eCommerce modules are installed.
+
+After upgrading the module: **Events → Halloweentocht → Go to Website** opens the page.
+To add the flyer image as cover, use the website editor's cover options on that page.
+
 ## Access rights
 
 Two groups under the **Sterrenboom** privilege:
 
-| Group | Members | Events |
-| --- | --- | --- |
-| User | read | read, write, create |
-| Manager | full | full |
+| Group | Members | Events | Implied Odoo Events group |
+| --- | --- | --- | --- |
+| User | read | read, write, create | Events / User |
+| Manager | full | full | Events / Administrator |
 
 ## Versioning
 

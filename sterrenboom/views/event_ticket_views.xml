@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="event_event_ticket_view_list_inherit_sterrenboom" model="ir.ui.view">
+        <field name="name">event.event.ticket.view.list.from.event.inherit.sterrenboom</field>
+        <field name="model">event.event.ticket</field>
+        <field name="inherit_id" ref="event.event_event_ticket_view_tree_from_event"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="sterrenboom_price" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="event_event_ticket_view_form_inherit_sterrenboom" model="ir.ui.view">
+        <field name="name">event.event.ticket.view.form.from.event.inherit.sterrenboom</field>
+        <field name="model">event.event.ticket</field>
+        <field name="inherit_id" ref="event.event_event_ticket_view_form_from_event"/>
+        <field name="arch" type="xml">
+            <field name="description" position="after">
+                <field name="sterrenboom_price"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
