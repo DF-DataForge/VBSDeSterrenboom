@@ -1,0 +1,39 @@
+# Local Odoo 19 stack that mirrors how CloudPepper mounts this repo as a
+# custom addons path. Start with:  docker compose up -d
+# Then open http://localhost:8069 (master password: see odoo.conf).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  odoo:
+    image: odoo:19.0
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+    environment:
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+      # This repo is the custom addons path — the folder mounted here must be
+      # the *parent* of the addon directory, exactly as on the server.
+      - ./:/mnt/extra-addons:ro
+
+volumes:
+  db-data:
+  odoo-data:

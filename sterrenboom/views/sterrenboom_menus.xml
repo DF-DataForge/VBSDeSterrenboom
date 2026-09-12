@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="sterrenboom_menu_root"
+              name="Sterrenboom"
+              web_icon="sterrenboom,static/description/icon.png"
+              groups="sterrenboom.group_sterrenboom_user"
+              sequence="90"/>
+
+    <menuitem id="sterrenboom_menu_events"
+              name="Events"
+              parent="sterrenboom_menu_root"
+              action="sterrenboom_event_action"
+              sequence="10"/>
+
+    <menuitem id="sterrenboom_menu_members"
+              name="Members"
+              parent="sterrenboom_menu_root"
+              action="sterrenboom_member_action"
+              sequence="20"/>
+
+</odoo>

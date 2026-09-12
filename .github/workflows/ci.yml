@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ODOO_VERSION: "19.0"
+  MODULE: sterrenboom
+
+jobs:
+  lint:
+    name: Lint (ruff + pylint-odoo)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run all hooks
+        run: pre-commit run --all-files --show-diff-on-failure --color always
+
+  test:
+    name: Install & test on Odoo 19.0
+    runs-on: ubuntu-latest
+    container:
+      image: odoo:19.0
+      options: --user root
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install module with demo data and run its tests
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/odoo-data
+          odoo \
+            --db_host=postgres \
+            --db_port=5432 \
+            --db_user=odoo \
+            --db_password=odoo \
+            --data-dir=/tmp/odoo-data \
+            --addons-path=/usr/lib/python3/dist-packages/odoo/addons,"$GITHUB_WORKSPACE" \
+            -d test_${MODULE} \
+            -i ${MODULE} \
+            --test-enable \
+            --test-tags=/${MODULE} \
+            --log-level=test \
+            --stop-after-init \
+            --no-http \
+          2>&1 | tee /tmp/odoo-install.log
+          # Odoo exits non-zero on test failure, but a failed assertion during
+          # module loading can still surface only in the log — fail loudly on it.
+          if grep -Eq "^.*(ERROR|CRITICAL) test_${MODULE}" /tmp/odoo-install.log; then
+            echo "::error::Errors were logged during module install/test"
+            exit 1
+          fi
+
+      - name: Verify the module also upgrades cleanly
+        run: |
+          set -euo pipefail
+          odoo \
+            --db_host=postgres \
+            --db_port=5432 \
+            --db_user=odoo \
+            --db_password=odoo \
+            --data-dir=/tmp/odoo-data \
+            --addons-path=/usr/lib/python3/dist-packages/odoo/addons,"$GITHUB_WORKSPACE" \
+            -d test_${MODULE} \
+            -u ${MODULE} \
+            --log-level=warn \
+            --stop-after-init \
+            --no-http
+
+      - name: Upload Odoo log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odoo-install-log
+          path: /tmp/odoo-install.log
+          if-no-files-found: ignore

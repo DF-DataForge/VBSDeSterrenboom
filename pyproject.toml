@@ -1,0 +1,91 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = [".venv", "venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # comprehensions
+    "SIM",  # simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    # Odoo models legitimately use class attributes that look like constants.
+    "RUF012",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Odoo manifests are a bare dict literal, and __init__ files are import-only.
+"**/__manifest__.py" = ["B018"]
+"**/__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-third-party = ["odoo"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+
+[tool.pylint.main]
+load-plugins = ["pylint_odoo"]
+
+[tool.pylint."messages control"]
+disable = ["all"]
+enable = [
+    "anomalous-backslash-in-string",
+    "assignment-from-none",
+    "dangerous-default-value",
+    "duplicate-key",
+    "pointless-statement",
+    "reimported",
+    "unreachable",
+    # pylint-odoo checks
+    "attribute-string-redundant",
+    "consider-merging-classes-inherited",
+    "development-status-allowed",
+    "external-dependency-not-installed",
+    "invalid-commit",
+    "manifest-author-string",
+    "manifest-data-duplicated",
+    "manifest-deprecated-key",
+    "manifest-required-author",
+    "manifest-required-key",
+    "manifest-version-format",
+    "method-compute",
+    "method-inverse",
+    "method-required-super",
+    "method-search",
+    "missing-readme",
+    "no-raise-unlink",
+    "no-wizard-in-models",
+    "odoo-addons-relative-import",
+    "prohibited-method-override",
+    "renamed-field-parameter",
+    "resource-not-exist",
+    "sql-injection",
+    "translation-field",
+    "translation-format-interpolation",
+    "translation-format-truncated",
+    "translation-not-lazy",
+    "translation-positional-used",
+    "translation-required",
+    "translation-too-few-args",
+    "translation-too-many-args",
+    "translation-unsupported-format",
+    "website-manifest-key-not-valid-uri",
+]
+
+[tool.pylint.odoolint]
+readme-template-url = "https://github.com/DF-DataForge/VBSDeSterrenboom/blob/main/README.md"
+manifest-required-authors = ["Data Forge"]
+manifest-required-keys = ["license"]
+manifest-deprecated-keys = ["active"]
+license-allowed = ["LGPL-3", "AGPL-3", "OPL-1"]
+valid-odoo-versions = ["19.0"]

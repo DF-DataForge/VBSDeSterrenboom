@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_groups_privilege_sterrenboom" model="res.groups.privilege">
+        <field name="name">Sterrenboom</field>
+        <field name="sequence">90</field>
+    </record>
+
+    <record id="group_sterrenboom_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="privilege_id" ref="res_groups_privilege_sterrenboom"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Can consult committee members and manage events.</field>
+    </record>
+
+    <record id="group_sterrenboom_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="privilege_id" ref="res_groups_privilege_sterrenboom"/>
+        <field name="implied_ids" eval="[Command.link(ref('group_sterrenboom_user'))]"/>
+        <field name="comment">Full control over committee members, events and archiving.</field>
+    </record>
+
+    <record id="base.user_admin" model="res.users">
+        <field name="group_ids" eval="[Command.link(ref('group_sterrenboom_manager'))]"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Odoo runtime artefacts (must never be committed)
+*.log
+odoo.log
+sessions/
+filestore/
+.odoo_history
+odoo.conf.local
+*.sql
+*.dump
+*.zip.bak
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets — never commit credentials or CloudPepper tokens
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.yml

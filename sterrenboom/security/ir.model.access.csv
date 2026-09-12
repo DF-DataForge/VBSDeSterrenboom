@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sterrenboom_member_user,sterrenboom.member.user,model_sterrenboom_member,sterrenboom.group_sterrenboom_user,1,0,0,0
+access_sterrenboom_member_manager,sterrenboom.member.manager,model_sterrenboom_member,sterrenboom.group_sterrenboom_manager,1,1,1,1
+access_sterrenboom_event_user,sterrenboom.event.user,model_sterrenboom_event,sterrenboom.group_sterrenboom_user,1,1,1,0
+access_sterrenboom_event_manager,sterrenboom.event.manager,model_sterrenboom_event,sterrenboom.group_sterrenboom_manager,1,1,1,1

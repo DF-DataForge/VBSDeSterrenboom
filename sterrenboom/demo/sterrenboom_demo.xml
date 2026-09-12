@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="demo_member_chairman" model="sterrenboom.member">
+            <field name="name">Anke Peeters</field>
+            <field name="email">anke.peeters@example.com</field>
+            <field name="phone">+32 470 00 00 01</field>
+            <field name="role">chairman</field>
+        </record>
+
+        <record id="demo_member_treasurer" model="sterrenboom.member">
+            <field name="name">Bram Claes</field>
+            <field name="email">bram.claes@example.com</field>
+            <field name="phone">+32 470 00 00 02</field>
+            <field name="role">treasurer</field>
+        </record>
+
+        <record id="demo_member_secretary" model="sterrenboom.member">
+            <field name="name">Sofie Maes</field>
+            <field name="email">sofie.maes@example.com</field>
+            <field name="role">secretary</field>
+        </record>
+
+        <record id="demo_event_meeting" model="sterrenboom.event">
+            <field name="name">Maandelijkse vergadering</field>
+            <field name="date" eval="DateTime.now().replace(hour=19, minute=0, second=0)"/>
+            <field name="date_end" eval="DateTime.now().replace(hour=21, minute=0, second=0)"/>
+            <field name="location">Leraarslokaal</field>
+            <field name="state">planned</field>
+            <field name="member_ids" eval="[Command.set([
+                ref('demo_member_chairman'),
+                ref('demo_member_treasurer'),
+                ref('demo_member_secretary'),
+            ])]"/>
+        </record>
+
+        <record id="demo_event_schoolfeest" model="sterrenboom.event">
+            <field name="name">Schoolfeest</field>
+            <field name="date" eval="(DateTime.now() + relativedelta(months=2)).replace(hour=14, minute=0, second=0)"/>
+            <field name="location">Schoolplein</field>
+            <field name="state">planned</field>
+            <field name="member_ids" eval="[Command.set([ref('demo_member_chairman')])]"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,95 +1,144 @@
-# VBSDeSterrenboom
+# VBS De Sterrenboom — Parent Committee
 
-Odoo module for managing parent committee (oudercomité) activities for sterrenboom.
+[![CI](https://github.com/DF-DataForge/VBSDeSterrenboom/actions/workflows/ci.yml/badge.svg)](https://github.com/DF-DataForge/VBSDeSterrenboom/actions/workflows/ci.yml)
+[![Odoo](https://img.shields.io/badge/Odoo-19.0-875A7B)](https://www.odoo.com/documentation/19.0/)
+[![License: LGPL-3](https://img.shields.io/badge/license-LGPL--3-blue)](LICENSE)
 
-## Features
+Odoo 19 addon for managing the parent committee (oudercomité) of VBS De Sterrenboom:
+a member register with committee roles, and event planning with attendee tracking,
+a status workflow, chatter and scheduled activities.
 
-- **Member Management**: Track committee members with their roles (Chairman, Treasurer, Secretary, Member)
-- **Event Management**: Create and manage committee events with attendee tracking
-- **Built-in Communication**: Chatter functionality for discussions on members and events
+## Repository layout
 
-## Module Structure
+This repository **is an Odoo addons path**. The addon lives in a folder named after its
+technical name, so the repo can be cloned straight onto a server without renaming anything.
 
 ```
-sterrenboom/
-├── __init__.py           # Module initialization
-├── __manifest__.py       # Module metadata and dependencies
-├── models/
-│   ├── __init__.py
-│   └── sterrenboom_model.py  # Member and Event models
-├── views/
-│   └── sterrenboom_views.xml # Forms, trees, and menu items
-└── security/
-    └── ir.model.access.csv   # Access control rules
+VBSDeSterrenboom/            <- add THIS folder to addons_path
+├── sterrenboom/             <- the addon (technical name: sterrenboom)
+│   ├── __manifest__.py
+│   ├── models/
+│   │   ├── sterrenboom_member.py
+│   │   └── sterrenboom_event.py
+│   ├── views/
+│   │   ├── sterrenboom_member_views.xml
+│   │   ├── sterrenboom_event_views.xml
+│   │   └── sterrenboom_menus.xml
+│   ├── security/
+│   │   ├── sterrenboom_groups.xml
+│   │   └── ir.model.access.csv
+│   ├── demo/
+│   ├── tests/
+│   └── static/description/icon.png
+├── .github/workflows/ci.yml  <- lints + installs the module on Odoo 19
+├── docker-compose.yml        <- local Odoo 19 stack
+└── pyproject.toml            <- ruff + pylint-odoo config
 ```
 
-## Installation
+## Deployment on CloudPepper
 
-1. **Clone or extract this module** into your Odoo `addons` directory:
-   ```bash
-   git clone https://github.com/DF-DataForge/VBSDeSterrenboom.git
-   mv VBSDeSterrenboom sterrenboom
-   ```
+CloudPepper pulls this repository into the server's custom addons directory and adds
+the **repository root** to `addons_path`.
 
-2. **Restart Odoo** (if using server mode) or **refresh** (in development mode)
+1. In CloudPepper, open your Odoo 19 instance → **Git Repositories** (or *Custom Modules*).
+2. Add the repository:
+   - URL: `https://github.com/DF-DataForge/VBSDeSterrenboom.git`
+   - Branch: `main`
+   - For a private repo, use a GitHub deploy key or a fine-grained PAT with read-only
+     `Contents` access. Never commit that token to this repo.
+3. Pull the repository, then **restart the Odoo service** so the new addons path is scanned.
+4. In Odoo: **Apps → Update Apps List**, search for *Sterrenboom*, click **Install**.
 
-3. **Install the module**:
-   - Go to Apps → Search for "Sterrenboom"
-   - Click "Install"
+To ship an update: merge to `main`, pull the repo in CloudPepper, restart Odoo, then
+**Apps → Sterrenboom → Upgrade**.
 
-4. **Access the module**:
-   - Menu: Sterrenboom → Members / Events
-   - Or search for "Members" or "Events" in the search bar
+> Verify that CloudPepper's addons path points at the repository root, not at the
+> `sterrenboom/` folder inside it. Pointing it one level too deep makes Odoo see the
+> module's subfolders as addons and the module will not appear in the Apps list.
+
+## Local development
+
+Requires Docker. No local Python or Odoo install needed.
+
+```bash
+docker compose up -d
+```
+
+Open <http://localhost:8069>, create a database, and install the *Sterrenboom* app.
+The repo is mounted read-only at `/mnt/extra-addons`, so edits on your machine are picked
+up by restarting the container:
+
+```bash
+docker compose restart odoo
+```
+
+To install the module with demo data and run its test suite exactly as CI does:
+
+```bash
+docker compose run --rm --no-deps odoo odoo --db_host=db --db_user=odoo --db_password=odoo -d dev --init sterrenboom --test-enable --test-tags=/sterrenboom --stop-after-init --no-http
+```
+
+## Code quality
+
+`pre-commit` runs ruff (lint + format) and `pylint-odoo` with Odoo 19 checks enabled:
+
+```bash
+pip install pre-commit
+pre-commit install
+pre-commit run --all-files
+```
+
+The same hooks run in CI on every push and pull request, alongside a job that installs
+the module on a clean Odoo 19.0 container and runs its tests.
 
 ## Models
 
-### sterrenboom.member
-Represents a committee member with the following fields:
-- **Name**: Member's full name (required)
-- **Email**: Email address (unique)
-- **Phone**: Contact phone number
-- **Role**: Position in committee (Chairman, Treasurer, Secretary, Member)
-- **Active**: Toggle to deactivate members
+### `sterrenboom.member`
 
-### sterrenboom.event
-Represents a committee event with the following fields:
-- **Event Name**: Name of the event (required)
-- **Event Date**: When the event takes place (required)
-- **Location**: Where the event is held
-- **Description**: Event details
-- **Attendees**: Link to member records attending the event
-- **State**: Event status (Planned, Ongoing, Completed, Cancelled)
-- **Notes**: Additional notes about the event
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | Char | Required, tracked |
+| `email` | Char | Tracked, unique across members |
+| `phone` | Char | |
+| `role` | Selection | Chairman / Treasurer / Secretary / Member |
+| `active` | Boolean | Archive instead of deleting |
+| `event_ids` | Many2many | Events attended |
+| `event_count` | Integer | Computed |
 
-## Usage
+### `sterrenboom.event`
 
-### Adding a Member
-1. Go to Sterrenboom → Members
-2. Click "Create"
-3. Fill in name, email, phone, and role
-4. Save
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | Char | Required, tracked |
+| `date` / `date_end` | Datetime | Start required; end must not precede start |
+| `location` | Char | |
+| `description` / `notes` | Html | Notes are internal |
+| `member_ids` | Many2many | Attendees |
+| `attendee_count` | Integer | Computed, stored |
+| `state` | Selection | Planned → Ongoing → Completed, or Cancelled |
 
-### Creating an Event
-1. Go to Sterrenboom → Events
-2. Click "Create"
-3. Enter event name and date
-4. Add location, description, and attendees
-5. Set event state
-6. Save
+Both models inherit `mail.thread` and `mail.activity.mixin`, so they have chatter,
+followers and scheduled activities.
 
-## Development
+## Access rights
 
-To extend this module:
+Two groups under the **Sterrenboom** privilege:
 
-- Add new models in `models/sterrenboom_model.py`
-- Create corresponding views in `views/sterrenboom_views.xml`
-- Update `models/__init__.py` to import new models
-- Add access rules in `security/ir.model.access.csv`
+| Group | Members | Events |
+| --- | --- | --- |
+| User | read | read, write, create |
+| Manager | full | full |
+
+## Versioning
+
+The manifest version follows the Odoo convention `19.0.<major>.<minor>.<patch>`. Bump it
+in `sterrenboom/__manifest__.py` whenever a change requires a module upgrade, and record
+the change in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-LGPL-3
+LGPL-3 — see [LICENSE](LICENSE).
 
 ## Author
 
-Data Forge - https://github.com/DF-DataForge
+Data Forge — <https://github.com/DF-DataForge>
