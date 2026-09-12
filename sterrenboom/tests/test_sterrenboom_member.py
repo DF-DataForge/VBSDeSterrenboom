@@ -20,10 +20,13 @@ class TestSterrenboomMember(TransactionCase):
 
     def test_email_must_be_unique(self):
         self.Member.create({'name': 'First', 'email': 'dup@example.com'})
-        with self.assertRaises(IntegrityError):
-            with mute_logger('odoo.sql_db'), self.env.cr.savepoint():
-                self.Member.create({'name': 'Second', 'email': 'dup@example.com'})
-                self.env.flush_all()
+        with (
+            self.assertRaises(IntegrityError),
+            mute_logger('odoo.sql_db'),
+            self.env.cr.savepoint(),
+        ):
+            self.Member.create({'name': 'Second', 'email': 'dup@example.com'})
+            self.env.flush_all()
 
     def test_members_without_email_are_allowed(self):
         """A NULL email must not collide with the unique constraint."""

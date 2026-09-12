@@ -9,9 +9,9 @@ class SterrenboomMember(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'name'
 
-    name = fields.Char(string='Name', required=True, tracking=True)
-    email = fields.Char(string='Email', tracking=True)
-    phone = fields.Char(string='Phone')
+    name = fields.Char(required=True, tracking=True)
+    email = fields.Char(tracking=True)
+    phone = fields.Char()
     role = fields.Selection(
         selection=[
             ('chairman', 'Chairman'),
@@ -19,12 +19,11 @@ class SterrenboomMember(models.Model):
             ('secretary', 'Secretary'),
             ('member', 'Member'),
         ],
-        string='Role',
         default='member',
         required=True,
         tracking=True,
     )
-    active = fields.Boolean(string='Active', default=True)
+    active = fields.Boolean(default=True)
     event_ids = fields.Many2many(
         comodel_name='sterrenboom.event',
         relation='sterrenboom_event_member_rel',
@@ -32,7 +31,7 @@ class SterrenboomMember(models.Model):
         column2='event_id',
         string='Events',
     )
-    event_count = fields.Integer(string='Event Count', compute='_compute_event_count')
+    event_count = fields.Integer(compute='_compute_event_count')
 
     _unique_email = models.Constraint(
         'unique (email)',
