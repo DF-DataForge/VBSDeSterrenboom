@@ -13,6 +13,9 @@ addon back to the repo root — Odoo derives the technical name from the folder 
   `C:\Users\piet_\AppData\Local\GitHubDesktop\app-3.6.5\resources\app\git\cmd\git.exe`.
 - No local Python, pip, Docker or Node. Linters and tests therefore cannot run locally
   right now — CI is the gate. Do not claim tests passed without CI output.
+- `git push` cannot be done from an agent shell: the remote is HTTPS and no credential
+  helper is configured for `github.com` (GitHub Desktop keeps its token in its own
+  store). Commit locally, then push from GitHub Desktop or an interactive terminal.
 
 ## Odoo 19 API specifics (verified against the 19.0 source)
 
