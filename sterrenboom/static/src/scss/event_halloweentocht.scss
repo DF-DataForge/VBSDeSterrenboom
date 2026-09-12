@@ -17,7 +17,7 @@
     }
 
     .o_sb_hero {
-        padding: 3.5rem 0 3rem;
+        padding: clamp(2rem, 8vw, 3.5rem) 0 clamp(1.5rem, 6vw, 3rem);
         text-align: center;
         background:
             radial-gradient(circle at 15% 20%, rgba($sb-orange, 0.25), transparent 30%),
@@ -29,29 +29,48 @@
         color: $sb-cream-dark;
     }
 
+    .o_sb_header_img {
+        display: block;
+        width: 100%;
+        max-width: 46rem;
+        height: auto;
+        margin: 0.5rem auto 0;
+        border-radius: 1rem;
+    }
+
     .o_sb_title {
         margin: 0.5rem 0 0;
+        // "HALLOWEENTOCHT" is one 14-character word: a fixed heading size overflows a
+        // phone screen, so scale it with the viewport and let it wrap only as a
+        // last resort.
+        font-size: clamp(1.75rem, 7.5vw, 4.5rem);
+        line-height: 1.05;
         font-weight: 900;
         letter-spacing: 0.04em;
         text-transform: uppercase;
+        overflow-wrap: break-word;
         color: $sb-orange;
         text-shadow: 0 0.25rem 0 $sb-orange-dark, 0 0.5rem 1.5rem rgba(0, 0, 0, 0.6);
     }
 
     .o_sb_subtitle {
+        font-size: clamp(1.25rem, 4.5vw, 2.5rem);
+        line-height: 1.2;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.08em;
+        overflow-wrap: break-word;
         color: #ffffff;
     }
 
     .o_sb_date_badge {
         display: inline-block;
+        max-width: 100%;
         margin-top: 1.5rem;
-        padding: 0.75rem 1.75rem;
+        padding: 0.75rem clamp(1rem, 4vw, 1.75rem);
         border: 3px dashed $sb-orange;
         border-radius: 50rem;
-        font-size: 1.5rem;
+        font-size: clamp(1.1rem, 4vw, 1.5rem);
         font-weight: 800;
         text-transform: capitalize;
         color: #ffffff;
@@ -85,7 +104,7 @@
     }
 
     .o_sb_panel {
-        padding: 2rem;
+        padding: clamp(1.25rem, 5vw, 2rem);
         border-radius: 1.25rem;
         background: $sb-cream;
         color: $sb-night;
@@ -134,13 +153,18 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        padding: 1rem 1.25rem;
+        padding: 1rem clamp(0.75rem, 3vw, 1.25rem);
         border-radius: 0.75rem;
         background: #ffffff;
         border: 1px solid $sb-cream-dark;
 
+        .o_sb_ticket_name {
+            // Let the name shrink instead of pushing the price off a narrow screen.
+            min-width: 0;
+        }
+
         .o_sb_ticket_price {
-            font-size: 1.5rem;
+            font-size: clamp(1.25rem, 5vw, 1.5rem);
             font-weight: 900;
             white-space: nowrap;
             color: $sb-orange-dark;
@@ -148,8 +172,8 @@
     }
 
     .o_sb_register_btn {
-        padding: 1rem 2.5rem;
-        font-size: 1.25rem;
+        padding: 1rem clamp(1.25rem, 5vw, 2.5rem);
+        font-size: clamp(1.05rem, 4vw, 1.25rem);
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.06em;

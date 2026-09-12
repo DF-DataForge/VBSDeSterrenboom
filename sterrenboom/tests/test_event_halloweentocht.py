@@ -1,9 +1,6 @@
 from datetime import datetime
 
-from psycopg2.errors import CheckViolation
-
 from odoo.tests.common import HttpCase, TransactionCase, tagged
-from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -32,21 +29,13 @@ class TestHalloweentochtData(TransactionCase):
     def test_tickets_match_flyer(self):
         tickets = self.event.event_ticket_ids.sorted('sequence')
         self.assertEqual(tickets.mapped('name'), ['Volwassene', 'Kind'])
-        self.assertEqual(tickets.mapped('sterrenboom_price'), [12.0, 10.0])
+        self.assertEqual(tickets.mapped('price'), [12.0, 10.0])
         for ticket in tickets:
             # Registrations close before 17/10/2026 (23:59:59 Europe/Brussels)
             self.assertEqual(ticket.end_sale_datetime, datetime(2026, 10, 16, 21, 59, 59))
             self.assertFalse(ticket.seats_limited)
-
-    @mute_logger('odoo.sql_db')
-    def test_negative_ticket_price_is_rejected(self):
-        with self.assertRaises(CheckViolation), self.env.cr.savepoint():
-            self.env['event.event.ticket'].create({
-                'event_id': self.event.id,
-                'name': 'Negative',
-                'sterrenboom_price': -1.0,
-            })
-            self.env.flush_all()
+            # event_sale prices its order lines from the ticket's product.
+            self.assertTrue(ticket.product_id)
 
 
 @tagged('post_install', '-at_install')

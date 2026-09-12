@@ -1,6 +1,6 @@
 {
     'name': 'Sterrenboom Parent Committee',
-    'version': '19.0.2.0.0',
+    'version': '19.0.3.0.0',
     'category': 'Services/Sterrenboom',
     'summary': 'Manage parent committee members and events for VBS De Sterrenboom',
     'description': """
@@ -14,6 +14,9 @@ Tools for managing the parent committee (oudercomité) of VBS De Sterrenboom:
 * Chatter and scheduled activities on both members and events
 * Custom website pages for events published through the Odoo Events app,
   including the "Halloweentocht - Trick or Treat" event
+* Website registrations that confirm a sales order, post its customer invoice and
+  mail the attendee bank transfer instructions with a structured communication and
+  a SEPA credit transfer QR code, so the payment reconciles itself in Accounting
 """,
     'author': 'Data Forge',
     'maintainer': 'Data Forge',
@@ -22,7 +25,11 @@ Tools for managing the parent committee (oudercomité) of VBS De Sterrenboom:
     'depends': [
         'base',
         'mail',
+        'account_qr_code_sepa',
+        'event_sale',
+        'l10n_be',
         'website_event',
+        'website_event_sale',
     ],
     'data': [
         'security/sterrenboom_groups.xml',
@@ -31,9 +38,9 @@ Tools for managing the parent committee (oudercomité) of VBS De Sterrenboom:
         'views/sterrenboom_event_views.xml',
         'views/sterrenboom_menus.xml',
         'views/event_event_views.xml',
-        'views/event_ticket_views.xml',
         'views/event_templates.xml',
         'views/event_halloweentocht_templates.xml',
+        'data/mail_template_data.xml',
         'data/event_halloweentocht_data.xml',
     ],
     'demo': [
@@ -44,6 +51,7 @@ Tools for managing the parent committee (oudercomité) of VBS De Sterrenboom:
             'sterrenboom/static/src/scss/event_halloweentocht.scss',
         ],
     },
+    'post_init_hook': 'post_init_hook',
     'installable': True,
     'application': True,
     'auto_install': False,

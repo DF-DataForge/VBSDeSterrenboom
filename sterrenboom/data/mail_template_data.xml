@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Payment instructions for a website event registration. Rendered on the
+            posted customer invoice, so `object.payment_reference` is the structured
+            communication Odoo generated from the journal's communication standard
+            (+++000/0000/00000+++ for a Belgian sale journal). Transferring that exact
+            communication is what lets Accounting reconcile the payment on its own.
+        -->
+        <record id="mail_template_registration_payment" model="mail.template">
+            <field name="name">Sterrenboom: betalingsinstructies inschrijving</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="subject">Betalingsinstructies – {{ object.company_id.name }}</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="description">Bank transfer instructions sent to a website event attendee.</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 14px;">
+                    <t t-set="events" t-value="object.invoice_line_ids.sale_line_ids.event_id"/>
+                    <t t-set="bank" t-value="object._sterrenboom_payment_bank()"/>
+
+                    <p>Dag <t t-out="object.partner_id.name or ''">Piet</t>,</p>
+
+                    <p t-if="events">
+                        Je inschrijving voor
+                        <strong t-out="', '.join(events.mapped('name'))">Halloweentocht</strong>
+                        is bevestigd. Bedankt!
+                    </p>
+                    <p t-else="">Je inschrijving is bevestigd. Bedankt!</p>
+
+                    <p>
+                        De betaling gebeurt met een gewone overschrijving – niet via de website.
+                        Gebruik <strong>exact</strong> de gestructureerde mededeling hieronder, dan
+                        wordt je betaling automatisch aan je inschrijving gekoppeld.
+                    </p>
+
+                    <table style="border-collapse: collapse; margin: 16px 0;">
+                        <tr>
+                            <td style="padding: 4px 16px 4px 0;">Bedrag</td>
+                            <td style="padding: 4px 0;">
+                                <strong t-out="format_amount(object.amount_residual, object.currency_id)">€ 22,00</strong>
+                            </td>
+                        </tr>
+                        <tr t-if="bank">
+                            <td style="padding: 4px 16px 4px 0;">Rekening (IBAN)</td>
+                            <td style="padding: 4px 0;"><strong t-out="bank.acc_number">BE00 0000 0000 0000</strong></td>
+                        </tr>
+                        <tr t-if="bank">
+                            <td style="padding: 4px 16px 4px 0;">Begunstigde</td>
+                            <td style="padding: 4px 0;" t-out="bank.acc_holder_name or bank.partner_id.name or object.company_id.name">Oudercomité</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px 16px 4px 0;">Gestructureerde mededeling</td>
+                            <td style="padding: 4px 0;">
+                                <strong t-out="object.payment_reference or object.name">+++000/0000/00097+++</strong>
+                            </td>
+                        </tr>
+                        <tr t-if="object.invoice_date_due and object.invoice_date_due &gt; object.invoice_date">
+                            <td style="padding: 4px 16px 4px 0;">Te betalen tegen</td>
+                            <td style="padding: 4px 0;" t-out="format_date(object.invoice_date_due)">01/10/2026</td>
+                        </tr>
+                    </table>
+
+                    <p>
+                        Je kan de factuur en een QR-code voor je bankapp hier bekijken:
+                        <a t-att-href="object.get_base_url() + object.get_portal_url()" t-out="object.name">INV/2026/00001</a>.
+                    </p>
+
+                    <p>Tot dan!<br/><t t-out="object.company_id.name">Oudercomité</t></p>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>
