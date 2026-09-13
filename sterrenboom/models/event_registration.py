@@ -26,22 +26,17 @@ class EventRegistration(models.Model):
         held.state = 'draft'
         held.sale_status = 'to_pay'
 
-    def _sterrenboom_send_ticket_mail_fallback(self):
-        """Mail the registration confirmation (with the ticket) where no scheduler will.
+    def _sterrenboom_send_ticket_mail(self):
+        """Queue Odoo's registration confirmation, with the ticket PDF, to these attendees.
 
-        Registered attendees are normally mailed by the event's "After each registration"
-        communication. When an event has none, send Odoo's confirmation template, which
-        carries the same ticket PDF, so *Send Tickets* always results in a mail.
+        Same template the event's "After each registration" communication uses, so a
+        resend or an event without that communication produces the identical mail.
+        Cancelled and unconfirmed attendees are skipped.
         """
         template = self.env.ref('event.event_subscription', raise_if_not_found=False)
         if not template:
             return
-        for registration in self.filtered(lambda reg: reg.state == 'open'):
-            has_scheduler = registration.event_id.event_mail_ids.filtered(
-                lambda scheduler: scheduler.interval_type == 'after_sub' and scheduler.template_ref
-            )
-            if has_scheduler:
-                continue
+        for registration in self.filtered(lambda reg: reg.state in ('open', 'done')):
             template.sudo().send_mail(registration.id, force_send=False)
 
     def _sterrenboom_invoice(self):

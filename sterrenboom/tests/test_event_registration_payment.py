@@ -182,7 +182,7 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         order, registrations = self._book()
         order._sterrenboom_invoice_registrations()
 
-        order.action_sterrenboom_send_tickets()
+        action = order.action_sterrenboom_send_tickets()
 
         self.assertFalse(order.sterrenboom_tickets_on_hold)
         self.assertTrue(order.sterrenboom_tickets_sent_date)
@@ -190,27 +190,38 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         self.assertEqual(set(registrations.mapped('sale_status')), {'sold'})
         # sent by the event's own "After each registration" communication
         self.assertEqual(len(registrations.mail_registration_ids.filtered('mail_sent')), 2)
-        mails = self._ticket_mails(registrations)
-        self.assertEqual(len(mails), 2)
-        for mail in mails:
-            self.assertIn('Testtocht', mail.subject)
+        # delivered on the spot and reported in a popup
+        self.assertEqual(action['tag'], 'display_notification')
+        self.assertEqual(action['params']['type'], 'success')
+        self.assertIn('2 attendee(s) in 2 mail(s)', action['params']['message'])
+        self.assertIn('Piet Van Haute', action['params']['message'])
 
     def test_send_tickets_without_event_communication_mails_the_confirmation(self):
         self.event.event_mail_ids.unlink()
         order, registrations = self._book()
         order._sterrenboom_invoice_registrations()
 
-        order.action_sterrenboom_send_tickets()
+        action = order.action_sterrenboom_send_tickets()
 
         self.assertEqual(set(registrations.mapped('state')), {'open'})
-        mails = self._ticket_mails(registrations)
-        self.assertEqual(len(mails), 2)
-        self.assertEqual(set(mails.mapped('res_id')), set(registrations.ids))
+        self.assertEqual(action['params']['type'], 'success')
+        self.assertIn('2 attendee(s) in 2 mail(s)', action['params']['message'])
 
-    def test_send_tickets_twice_is_refused(self):
-        order, _registrations = self._book()
+    def test_send_tickets_again_resends_them(self):
+        order, registrations = self._book()
         order._sterrenboom_invoice_registrations()
         order.action_sterrenboom_send_tickets()
+        first_sent_date = order.sterrenboom_tickets_sent_date
+
+        action = order.action_sterrenboom_send_tickets()
+
+        self.assertEqual(set(registrations.mapped('state')), {'open'})
+        self.assertEqual(action['params']['type'], 'success')
+        self.assertIn('2 attendee(s) in 2 mail(s)', action['params']['message'])
+        self.assertGreaterEqual(order.sterrenboom_tickets_sent_date, first_sent_date)
+
+    def test_send_tickets_needs_a_confirmed_order(self):
+        order, _registrations = self._book()
 
         with self.assertRaises(UserError):
             order.action_sterrenboom_send_tickets()

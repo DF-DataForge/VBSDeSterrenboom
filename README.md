@@ -180,8 +180,10 @@ the attendee details and confirms:
    sales order (**Sales → Orders**, or the invoice's *Source Document*) and clicks
    **Send Tickets**. That registers the attendees, which runs the event's *After each
    registration* communication — Odoo's confirmation mail with the ticket PDF — and
-   records *Tickets Sent On* on the order. Events without such a communication get that
-   mail sent directly.
+   records *Tickets Sent On* on the order. Events without such a communication, and
+   every later click (a resend, e.g. after a bounce), get that mail sent directly. The
+   mails are delivered on the spot and a popup reports what was sent or what failed.
+   The button is available on every confirmed order with attendees.
 
 ### What the committee has to configure once
 
@@ -214,6 +216,15 @@ event record. Payment is not collected on the website: confirming a registration
 the sales order and the invoice, and the attendee transfers the amount with the
 structured communication they get on screen and by mail.
 
+### Header image and tickets
+
+*Header Image* on the event (**Events → the event**, next to *Custom Website Page*) is
+shown as a banner across the top of the custom web page and of the tickets. The
+Halloweentocht record ships with the flyer header. The full-page ticket is redesigned
+(`sterrenboom.event_report_template_full_page_ticket_sterrenboom`): banner, event,
+attendee, ticket type, date and venue next to the QR-code, order and ticket reference in
+the footer. Events without an image get a dark banner with the event name.
+
 ### Flyer header image
 
 The page opens with the flyer artwork, **`sterrenboom/static/src/img/halloweentocht.jpg`**,
@@ -228,6 +239,15 @@ shown.
 
 After upgrading the module: **Events → Halloweentocht → Go to Website** opens the page.
 To add the flyer image as cover, use the website editor's cover options on that page.
+
+## Branding
+
+Every outgoing mail, the ticket PDF, the Halloweentocht page and the registration
+confirmation page end with *powered by Data Forge*: the Data Forge logo
+(`static/src/img/dataforge_logo.png`) linking to <https://www.data-forge.be>. Web pages
+call the QWeb template `sterrenboom.powered_by_data_forge`; mails get the footer from
+`mail.mail._prepare_outgoing_body`; the ticket from an inherit of Odoo's full-page
+ticket report.
 
 ## Access rights
 

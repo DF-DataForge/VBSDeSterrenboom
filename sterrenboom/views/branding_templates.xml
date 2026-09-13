@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- "powered by Data Forge": logo linking to the Data Forge website.
+         Web pages call this template; mails get the same footer from
+         mail.mail._prepare_outgoing_body, tickets from the report inherit below. -->
+    <template id="powered_by_data_forge" name="Sterrenboom: powered by Data Forge">
+        <div class="o_sb_powered_by text-center small py-3">
+            <a href="https://www.data-forge.be" target="_blank" rel="noopener"
+               class="text-decoration-none" title="Data Forge">
+                <span class="me-2">powered by</span>
+                <img src="/sterrenboom/static/src/img/dataforge_logo.png" alt="Data Forge"
+                     class="o_sb_powered_by_logo align-middle"/>
+            </a>
+        </div>
+    </template>
+
+    <!-- Registration confirmation page -->
+    <template id="registration_complete_powered_by"
+              name="Sterrenboom: powered by Data Forge on the confirmation page"
+              inherit_id="website_event.registration_complete">
+        <xpath expr="//div[hasclass('o_wereg_confirmed')]" position="inside">
+            <t t-call="sterrenboom.powered_by_data_forge"/>
+        </xpath>
+    </template>
+
+    <!--
+        Ticket (PDF and the responsive HTML ticket): the event's Header Image as a banner,
+        then attendee, ticket type, date and venue next to the QR-code, in one card.
+        Core class names are kept where the core stylesheets size the columns; the look
+        comes from static/src/scss/event_ticket_report.scss.
+    -->
+    <template id="event_report_template_full_page_ticket_sterrenboom"
+              name="Sterrenboom: ticket design"
+              inherit_id="event.event_report_template_full_page_ticket">
+        <xpath expr="//div[hasclass('o_event_full_page_ticket_details')]" position="replace">
+            <div class="o_event_full_page_ticket_details o_sb_ticket_card">
+                <div t-if="event.sterrenboom_header_image" class="o_sb_ticket_banner"
+                     t-attf-style="background-image: url(#{image_data_uri(event.sterrenboom_header_image)});"
+                     t-att-title="event.name"/>
+                <div t-else="" class="o_sb_ticket_banner o_sb_ticket_banner_text">
+                    <h2 class="m-0" t-field="event.name"/>
+                </div>
+
+                <div class="o_sb_ticket_body d-flex flex-column-reverse flex-sm-row">
+                    <div class="o_event_full_page_left_details o_sb_ticket_main">
+                        <div class="o_sb_ticket_label">Toegangsticket</div>
+                        <div class="o_sb_ticket_event" t-field="event.name"/>
+
+                        <div class="o_sb_ticket_label mt-3">Deelnemer</div>
+                        <div class="o_sb_ticket_attendee" t-if="attendee" t-field="attendee.name"/>
+                        <div class="o_sb_ticket_attendee" t-else="">John Doe</div>
+                        <t t-set="first_ticket" t-value="event.event_ticket_ids[0] if event.event_ticket_ids else None"/>
+                        <div t-if="attendee and attendee.event_ticket_id" class="o_sb_ticket_type">
+                            <span t-field="attendee.event_ticket_id.name"/>
+                        </div>
+                        <div t-elif="not attendee and first_ticket" class="o_sb_ticket_type" t-out="first_ticket.name"/>
+
+                        <t t-set="answer_badge_classes" t-valuef="o_sb_ticket_answer #{'badge' if responsive_html else 'px-2 py-1 d-inline-block'} my-1 me-1 fw-semibold"/>
+                        <div t-if="attendee and attendee.registration_answer_choice_ids" class="mb-2">
+                            <span t-foreach="attendee.registration_answer_choice_ids" t-as="answer"
+                                  t-att-class="answer_badge_classes" t-out="answer.display_name"/>
+                        </div>
+
+                        <div class="row gy-0 gx-2 mt-3">
+                            <div class="col-md-6 col-12 mb-3 o_event_full_page_ticket_column">
+                                <div class="o_sb_ticket_label">Wanneer</div>
+                                <div class="d-flex">
+                                    <i class="fa fa-calendar fa-fw me-2 mt-1 o_sb_ticket_icon"/>
+                                    <div t-if="attendee">
+                                        <span t-field="attendee.event_begin_date" class="text-nowrap"
+                                              t-options='{"widget": "datetime", "tz_name": event.date_tz, "format": "EEEE d MMMM y"}'/><br/>
+                                        <span t-field="attendee.event_begin_date" class="text-nowrap"
+                                              t-options='{"widget": "datetime", "tz_name": event.date_tz, "format": "HH:mm"}'/>
+                                        –
+                                        <span t-field="attendee.event_end_date" class="text-nowrap"
+                                              t-options='{"widget": "datetime", "tz_name": event.date_tz, "format": "HH:mm"}'/>
+                                    </div>
+                                    <div t-else="">
+                                        <span t-field="event.date_begin" class="text-nowrap"
+                                              t-options='{"widget": "datetime", "tz_name": event.date_tz, "format": "EEEE d MMMM y"}'/><br/>
+                                        <span t-field="event.date_begin" class="text-nowrap"
+                                              t-options='{"widget": "datetime", "tz_name": event.date_tz, "format": "HH:mm"}'/>
+                                        –
+                                        <span t-field="event.date_end" class="text-nowrap"
+                                              t-options='{"widget": "datetime", "tz_name": event.date_tz, "format": "HH:mm"}'/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div t-if="event.address_id" class="col-md-6 col-12 mb-3 o_event_full_page_ticket_column">
+                                <div class="o_sb_ticket_label">Waar</div>
+                                <div class="d-flex">
+                                    <i class="fa fa-map-marker fa-fw me-2 mt-1 o_sb_ticket_icon"/>
+                                    <div>
+                                        <t t-call="event.event_report_template_formatted_event_address" multi_line_address="True"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR-code only: the Code128 strip Odoo adds when barcodes are enabled
+                         is left out, the QR carries the same registration code. -->
+                    <div class="o_event_full_page_ticket_barcode o_event_full_page_ticket_qr_only o_sb_ticket_qr text-center">
+                        <div class="o_event_full_page_ticket_barcode_container px-2">
+                            <img t-if="not attendee or (attendee and attendee.barcode)" class="o_sb_ticket_qr_img"
+                                 t-attf-src="/report/barcode/QR/{{attendee.barcode if attendee and attendee.barcode else '12345678901234567890'}}?&amp;width=152&amp;height=152&amp;quiet=0"
+                                 alt="QR Code"/>
+                            <div class="o_sb_ticket_label mt-2">Toon deze code aan de inkom</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div t-if="not responsive_html and event.ticket_instructions" t-field="event.ticket_instructions"
+                     class="o_event_full_page_extra_instructions o_sb_ticket_instructions"/>
+
+                <div class="o_sb_ticket_foot">
+                    <div>
+                        <span t-if="attendee and attendee.sale_order_id">
+                            Bestelling <span t-field="attendee.sale_order_id.name"/>
+                        </span>
+                        <span t-if="attendee and attendee.barcode" class="ms-3">
+                            Ticket <span t-field="attendee.barcode"/>
+                        </span>
+                    </div>
+                    <a href="https://www.data-forge.be" target="_blank" class="o_sb_ticket_powered_by">
+                        powered by
+                        <img src="/sterrenboom/static/src/img/dataforge_logo.png" alt="Data Forge"
+                             class="o_sb_ticket_powered_by_logo"/>
+                    </a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

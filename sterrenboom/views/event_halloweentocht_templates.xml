@@ -233,6 +233,8 @@
                     </div>
                 </section>
 
+                <t t-call="sterrenboom.powered_by_data_forge"/>
+
             </div>
         </t>
     </template>

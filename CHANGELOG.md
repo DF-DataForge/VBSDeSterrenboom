@@ -3,6 +3,41 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.5.0] — 2026-09-13
+
+Requires a module upgrade; the migration puts the flyer artwork on the event record.
+
+### Added
+- `event.event.sterrenboom_header_image` (*Header Image*): artwork shown across the top
+  of the event's custom web page and of its tickets. Loaded with the Halloweentocht
+  flyer header; the static JPEG stays as fallback for the page.
+
+### Changed
+- Redesigned full-page ticket (`event.event_report_template_full_page_ticket`): the
+  header image as banner, then event, attendee, ticket type, date and venue next to the
+  QR-code in one card, order and ticket reference in the footer, styled by
+  `static/src/scss/event_ticket_report.scss`. Events without artwork get a dark banner
+  with the event name. Only the QR-code is printed, never the Code128 barcode strip.
+
+## [19.0.4.4.0] — 2026-09-13
+
+### Added
+- "powered by Data Forge", with the Data Forge logo linking to <https://www.data-forge.be>,
+  on the Halloweentocht page and the registration confirmation page
+  (`sterrenboom.powered_by_data_forge`), at the bottom of every outgoing mail
+  (`mail.mail._prepare_outgoing_body`) and on the ticket PDF
+  (`event.event_report_template_full_page_ticket`).
+
+## [19.0.4.3.0] — 2026-09-13
+
+### Changed
+- **Send Tickets** stays available on every confirmed sales order with attendees, not
+  only while the tickets are on hold, so tickets can be sent again (e.g. after a
+  bounce). A later click sends Odoo's confirmation mail with the ticket PDF directly.
+- The ticket mails are delivered immediately instead of waiting for the mail queue, and
+  a sticky popup reports how many were sent and which ones failed, with the reason.
+  The same summary is logged in the order's chatter.
+
 ## [19.0.4.2.0] — 2026-09-13
 
 Outgoing mails authored by OdooBot (activity assignments), the public website user or

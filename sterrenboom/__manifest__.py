@@ -1,6 +1,6 @@
 {
     'name': 'Sterrenboom Parent Committee',
-    'version': '19.0.4.2.0',
+    'version': '19.0.4.5.0',
     'category': 'Services/Sterrenboom',
     'summary': 'Manage parent committee members and events for VBS De Sterrenboom',
     'description': """
@@ -41,6 +41,7 @@ Tools for managing the parent committee (oudercomité) of VBS De Sterrenboom:
         'views/sale_order_views.xml',
         'views/event_templates.xml',
         'views/event_halloweentocht_templates.xml',
+        'views/branding_templates.xml',
         'data/mail_template_data.xml',
         'data/event_halloweentocht_data.xml',
     ],
@@ -50,6 +51,9 @@ Tools for managing the parent committee (oudercomité) of VBS De Sterrenboom:
     'assets': {
         'web.assets_frontend': [
             'sterrenboom/static/src/scss/event_halloweentocht.scss',
+        ],
+        'web.report_assets_common': [
+            'sterrenboom/static/src/scss/event_ticket_report.scss',
         ],
     },
     'post_init_hook': 'post_init_hook',
