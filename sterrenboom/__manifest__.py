@@ -1,6 +1,6 @@
 {
     'name': 'Sterrenboom Parent Committee',
-    'version': '19.0.4.1.0',
+    'version': '19.0.4.2.0',
     'category': 'Services/Sterrenboom',
     'summary': 'Manage parent committee members and events for VBS De Sterrenboom',
     'description': """
