@@ -59,6 +59,14 @@ class TestPoweredByDataForge(TransactionCase):
         # no artwork: the banner carries the event name instead
         self.assertIn('o_sb_ticket_banner_text', html)
 
+    def test_ticket_has_a_qr_code_but_no_barcode(self):
+        self.env['ir.config_parameter'].sudo().set_param('event.use_event_barcode', 'True')
+
+        html = self._ticket_html()
+
+        self.assertIn('/report/barcode/QR/', html)
+        self.assertNotIn('barcode_type=Code128', html)
+
     def test_ticket_banner_uses_the_header_image(self):
         halloween = self.env.ref('sterrenboom.event_halloweentocht_2026')
         self.assertTrue(halloween.sterrenboom_header_image, "data file did not load the artwork")

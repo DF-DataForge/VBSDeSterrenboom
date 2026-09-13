@@ -17,7 +17,7 @@ Requires a module upgrade; the migration puts the flyer artwork on the event rec
   header image as banner, then event, attendee, ticket type, date and venue next to the
   QR-code in one card, order and ticket reference in the footer, styled by
   `static/src/scss/event_ticket_report.scss`. Events without artwork get a dark banner
-  with the event name.
+  with the event name. Only the QR-code is printed, never the Code128 barcode strip.
 
 ## [19.0.4.4.0] — 2026-09-13
 
