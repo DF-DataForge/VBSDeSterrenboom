@@ -49,6 +49,9 @@ docs site is JS-heavy and WebFetch only returns its nav.
 - Bump `19.0.X.Y.Z` in the manifest and add a `CHANGELOG.md` entry for anything that
   needs a module upgrade on the server.
 - Prefer archiving (`active`) over unlinking.
+- Records in `<data noupdate="1">` (mail templates, event data) are not touched by an
+  upgrade. To ship a text change, add a `migrations/<version>/post-migrate.py` that
+  reloads the file with `convert_file(env, 'sterrenboom', 'data/x.xml', None, mode='init')`.
 
 ## Commits
 

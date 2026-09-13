@@ -1,6 +1,6 @@
 import logging
 
-from odoo import models
+from odoo import api, models
 
 _logger = logging.getLogger(__name__)
 
@@ -9,6 +9,40 @@ class EventRegistration(models.Model):
     """Tie website registrations to the invoice the attendee has to transfer money for."""
 
     _inherit = 'event.registration'
+
+    @api.depends('sale_order_id.sterrenboom_tickets_on_hold')
+    def _compute_registration_status(self):
+        """Keep attendees of an order with tickets on hold Unconfirmed.
+
+        ``event_sale`` registers an attendee as soon as their order is confirmed, and
+        registering is what mails the ticket and unlocks its download. The website flow
+        confirms the order right away to invoice it, so the hold set there keeps the
+        attendee Unconfirmed (and "to pay") until the committee releases it.
+        """
+        super()._compute_registration_status()
+        held = self.filtered(
+            lambda reg: reg.state == 'open' and reg.sale_order_id.sterrenboom_tickets_on_hold
+        )
+        held.state = 'draft'
+        held.sale_status = 'to_pay'
+
+    def _sterrenboom_send_ticket_mail_fallback(self):
+        """Mail the registration confirmation (with the ticket) where no scheduler will.
+
+        Registered attendees are normally mailed by the event's "After each registration"
+        communication. When an event has none, send Odoo's confirmation template, which
+        carries the same ticket PDF, so *Send Tickets* always results in a mail.
+        """
+        template = self.env.ref('event.event_subscription', raise_if_not_found=False)
+        if not template:
+            return
+        for registration in self.filtered(lambda reg: reg.state == 'open'):
+            has_scheduler = registration.event_id.event_mail_ids.filtered(
+                lambda scheduler: scheduler.interval_type == 'after_sub' and scheduler.template_ref
+            )
+            if has_scheduler:
+                continue
+            template.sudo().send_mail(registration.id, force_send=False)
 
     def _sterrenboom_invoice(self):
         """The posted customer invoice covering these registrations, if there is one."""

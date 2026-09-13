@@ -160,18 +160,28 @@ the attendee details and confirms:
 
 1. `website_event_sale` puts the tickets in a sales order and creates one registration
    per attendee, linked to their order line.
-2. `sale.order._sterrenboom_invoice_registrations()` confirms that order, creates its
-   customer invoice and posts it. Posting is what generates the **structured
-   communication** (`payment_reference`) and makes the receivable visible to Accounting.
-3. The visitor is redirected straight to the standard confirmation page, which now also
-   shows the amount, the IBAN, the structured communication and a **SEPA credit transfer
-   QR-code** — the same QR-code Odoo prints on an invoice PDF, so any banking app can
-   scan it.
+2. `sale.order._sterrenboom_invoice_registrations()` puts the tickets **on hold**
+   (`sterrenboom_tickets_on_hold`), confirms the order, creates its customer invoice and
+   posts it. Posting is what generates the **structured communication**
+   (`payment_reference`) and makes the receivable visible to Accounting. Confirming an
+   order normally registers the attendees at once, which mails them their tickets; the
+   hold keeps them *Unconfirmed* (`event.registration._compute_registration_status`) so
+   no ticket goes out yet.
+3. The visitor is redirected to the standard confirmation page, which shows the amount,
+   the IBAN, the structured communication and a **SEPA credit transfer QR-code** — the
+   same QR-code Odoo prints on an invoice PDF, so any banking app can scan it. There is
+   no ticket download: the page says the tickets follow once the payment is processed.
 4. The attendees are mailed the same instructions
-   (`sterrenboom.mail_template_registration_payment`), with a portal link to the invoice.
-
-When the transfer arrives, the bank statement line carries the structured
-communication, so Accounting reconciles it against the invoice without manual matching.
+   (`sterrenboom.mail_template_registration_payment`), with a portal link to the invoice
+   and the note that the tickets follow once the payment is processed.
+5. When the transfer arrives, the bank statement line carries the structured
+   communication, so Accounting reconciles it against the invoice without manual
+   matching. Nothing happens automatically after that: a committee member opens the
+   sales order (**Sales → Orders**, or the invoice's *Source Document*) and clicks
+   **Send Tickets**. That registers the attendees, which runs the event's *After each
+   registration* communication — Odoo's confirmation mail with the ticket PDF — and
+   records *Tickets Sent On* on the order. Events without such a communication get that
+   mail sent directly.
 
 ### What the committee has to configure once
 
