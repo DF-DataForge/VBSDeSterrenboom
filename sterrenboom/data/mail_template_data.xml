@@ -59,7 +59,9 @@
                                 <strong t-out="object.payment_reference or object.name">+++000/0000/00097+++</strong>
                             </td>
                         </tr>
-                        <tr t-if="object.invoice_date_due and object.invoice_date_due &gt; object.invoice_date">
+                        <!-- Guard invoice_date: Odoo validates the template against an existing
+                             invoice on save, and a draft one has no invoice date yet. -->
+                        <tr t-if="object.invoice_date_due and (not object.invoice_date or object.invoice_date_due &gt; object.invoice_date)">
                             <td style="padding: 4px 16px 4px 0;">Te betalen tegen</td>
                             <td style="padding: 4px 0;" t-out="format_date(object.invoice_date_due)">01/10/2026</td>
                         </tr>
