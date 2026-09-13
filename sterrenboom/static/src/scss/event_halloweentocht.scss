@@ -190,3 +190,18 @@
         }
     }
 }
+
+// "powered by Data Forge" (sterrenboom.powered_by_data_forge), on any page.
+.o_sb_powered_by {
+    color: inherit;
+    opacity: 0.85;
+
+    a {
+        color: inherit;
+    }
+
+    .o_sb_powered_by_logo {
+        height: 1.5rem;
+        width: auto;
+    }
+}

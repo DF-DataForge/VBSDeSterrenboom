@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- "powered by Data Forge": logo linking to the Data Forge website.
+         Web pages call this template; mails get the same footer from
+         mail.mail._prepare_outgoing_body, tickets from the report inherit below. -->
+    <template id="powered_by_data_forge" name="Sterrenboom: powered by Data Forge">
+        <div class="o_sb_powered_by text-center small py-3">
+            <a href="https://www.data-forge.be" target="_blank" rel="noopener"
+               class="text-decoration-none" title="Data Forge">
+                <span class="me-2">powered by</span>
+                <img src="/sterrenboom/static/src/img/dataforge_logo.png" alt="Data Forge"
+                     class="o_sb_powered_by_logo align-middle"/>
+            </a>
+        </div>
+    </template>
+
+    <!-- Registration confirmation page -->
+    <template id="registration_complete_powered_by"
+              name="Sterrenboom: powered by Data Forge on the confirmation page"
+              inherit_id="website_event.registration_complete">
+        <xpath expr="//div[hasclass('o_wereg_confirmed')]" position="inside">
+            <t t-call="sterrenboom.powered_by_data_forge"/>
+        </xpath>
+    </template>
+
+    <!-- Ticket PDF (also the responsive HTML ticket). wkhtmltopdf keeps the link clickable. -->
+    <template id="event_report_template_full_page_ticket_powered_by"
+              name="Sterrenboom: powered by Data Forge on the ticket"
+              inherit_id="event.event_report_template_full_page_ticket">
+        <xpath expr="//div[hasclass('o_event_full_page_ticket_details')]" position="inside">
+            <div class="text-center pt-2 pb-3" style="font-size: 11px; color: #888888;">
+                <a href="https://www.data-forge.be" target="_blank"
+                   style="color: #888888; text-decoration: none;">
+                    powered by
+                    <img src="/sterrenboom/static/src/img/dataforge_logo.png" alt="Data Forge"
+                         style="height: 18px; vertical-align: middle;"/>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

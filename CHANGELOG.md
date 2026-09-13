@@ -3,6 +3,15 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.4.0] — 2026-09-13
+
+### Added
+- "powered by Data Forge", with the Data Forge logo linking to <https://www.data-forge.be>,
+  on the Halloweentocht page and the registration confirmation page
+  (`sterrenboom.powered_by_data_forge`), at the bottom of every outgoing mail
+  (`mail.mail._prepare_outgoing_body`) and on the ticket PDF
+  (`event.event_report_template_full_page_ticket`).
+
 ## [19.0.4.3.0] — 2026-09-13
 
 ### Changed

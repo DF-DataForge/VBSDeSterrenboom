@@ -231,6 +231,15 @@ shown.
 After upgrading the module: **Events → Halloweentocht → Go to Website** opens the page.
 To add the flyer image as cover, use the website editor's cover options on that page.
 
+## Branding
+
+Every outgoing mail, the ticket PDF, the Halloweentocht page and the registration
+confirmation page end with *powered by Data Forge*: the Data Forge logo
+(`static/src/img/dataforge_logo.png`) linking to <https://www.data-forge.be>. Web pages
+call the QWeb template `sterrenboom.powered_by_data_forge`; mails get the footer from
+`mail.mail._prepare_outgoing_body`; the ticket from an inherit of Odoo's full-page
+ticket report.
+
 ## Access rights
 
 Two groups under the **Sterrenboom** privilege:

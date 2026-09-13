@@ -50,6 +50,9 @@ class TestHalloweentochtPage(HttpCase):
         self.assertIn('Gratis drankje bij verkleding', response.text)
         # registration modal from website_event.layout is present on the custom page
         self.assertIn('id="modal_ticket_registration"', response.text)
+        # powered by Data Forge, logo linking to their website
+        self.assertIn('href="https://www.data-forge.be"', response.text)
+        self.assertIn('/sterrenboom/static/src/img/dataforge_logo.png', response.text)
 
     def test_event_without_custom_page_keeps_standard_page(self):
         event = self.env['event.event'].create({
