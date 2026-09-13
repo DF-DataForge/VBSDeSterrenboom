@@ -3,6 +3,21 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.2.0] — 2026-09-13
+
+Outgoing mails authored by OdooBot (activity assignments), the public website user or
+a committee member bounced: the SMTP provider only accepts the committee mailbox as
+sender. Requires a module upgrade.
+
+### Added
+- `hooks._apply_outgoing_mail_identity`, run at install and by a 19.0.4.2.0 migration:
+  creates (or completes) a `mail.alias.domain` for the company email address with
+  *Default From*, catchall and bounce all set to that mailbox, and sets *FROM Filtering*
+  to that address on outgoing mail servers that have none. Every other sender is then
+  rewritten to the company mailbox (the author's name is kept) and replies come back to
+  it. Companies without an email, or on an alias domain for another domain name, are
+  left alone; aliases changed by hand are kept.
+
 ## [19.0.4.1.0] — 2026-09-13
 
 ### Changed

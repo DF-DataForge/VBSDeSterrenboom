@@ -1,5 +1,7 @@
 import logging
 
+from odoo.tools import email_normalize
+
 _logger = logging.getLogger(__name__)
 
 
@@ -28,5 +30,77 @@ def _apply_structured_communication(env):
         )
 
 
+def _apply_outgoing_mail_identity(env):
+    """Send every outgoing mail from the company mailbox.
+
+    The committee's SMTP provider only accepts mail whose From is the mailbox itself,
+    while Odoo mails on behalf of OdooBot (activity assignments), the public website
+    user or whoever is responsible: those bounced. Odoo's own answer is two settings
+    that this configures from the company email address (e.g. ``oc@example.org``):
+
+    * a ``mail.alias.domain`` for ``example.org`` whose *Default From*, catchall and
+      bounce aliases are all ``oc``: any sender the outgoing server does not accept
+      is rewritten to ``oc@example.org`` (the author's name is kept), replies and
+      bounces come back to that same mailbox;
+    * *FROM Filtering* = ``oc@example.org`` on outgoing mail servers that have none,
+      which is what makes the rewrite kick in for every other sender.
+
+    Companies without an email address, or already using an alias domain for another
+    domain name, are left alone. Aliases the committee changed by hand are kept.
+    """
+    AliasDomain = env['mail.alias.domain'].sudo()
+    for company in env['res.company'].sudo().search([]):
+        email = email_normalize(company.email or '')
+        if not email:
+            _logger.warning(
+                "sterrenboom: company %s has no email address, outgoing mails keep their "
+                "own sender and may be refused by the mail server", company.name,
+            )
+            continue
+        local_part, domain_name = email.split('@', 1)
+        alias_domain = company.alias_domain_id
+        if alias_domain and alias_domain.name != domain_name:
+            _logger.warning(
+                "sterrenboom: company %s already uses alias domain %s, not %s: leaving "
+                "its mail identity alone", company.name, alias_domain.name, domain_name,
+            )
+            continue
+        if not alias_domain:
+            alias_domain = AliasDomain.search([('name', '=', domain_name)], limit=1)
+        if not alias_domain:
+            alias_domain = AliasDomain.create({
+                'name': domain_name,
+                'default_from': local_part,
+                'catchall_alias': local_part,
+                'bounce_alias': local_part,
+            })
+            _logger.info("sterrenboom: created alias domain %s sending as %s", domain_name, email)
+        else:
+            values = {}
+            if email_normalize(alias_domain.default_from_email or '') != email:
+                values['default_from'] = local_part
+            # only replace Odoo's defaults, not aliases the committee chose
+            if alias_domain.catchall_alias == 'catchall':
+                values['catchall_alias'] = local_part
+            if alias_domain.bounce_alias == 'bounce':
+                values['bounce_alias'] = local_part
+            if values:
+                alias_domain.write(values)
+        if company.alias_domain_id != alias_domain:
+            company.alias_domain_id = alias_domain
+
+        servers = env['ir.mail_server'].sudo().search([
+            ('owner_user_id', '=', False),
+            ('from_filter', '=', False),
+        ])
+        if servers:
+            servers.write({'from_filter': email})
+            _logger.info(
+                "sterrenboom: outgoing mail server(s) %s now only send as %s",
+                ', '.join(servers.mapped('name')), email,
+            )
+
+
 def post_init_hook(env):
     _apply_structured_communication(env)
+    _apply_outgoing_mail_identity(env)
