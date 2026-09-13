@@ -72,11 +72,6 @@
                         </tr>
                     </table>
 
-                    <p>
-                        Je kan de factuur en een QR-code voor je bankapp hier bekijken:
-                        <a t-att-href="object.get_base_url() + object.get_portal_url()" t-out="object.name">INV/2026/00001</a>.
-                    </p>
-
                     <p>Tot dan!<br/><t t-out="object.company_id.name">Oudercomité</t></p>
                 </div>
             </field>

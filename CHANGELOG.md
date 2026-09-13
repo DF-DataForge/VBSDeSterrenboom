@@ -10,8 +10,9 @@ convention `19.0.<major>.<minor>.<patch>`.
   overschrijving – niet via de website" was confusing. After "Bedankt!" the mail now
   reads: "Hieronder vind je de gegevens voor de overschrijving. Indien je deze reeds via
   de website betaalde, mag je deze mail negeren. De tickets worden doorgestuurd zodra
-  jouw betaling verwerkt is." The note added in 19.0.4.0.0 at the end is dropped. The
-  upgrade reloads the (noupdate) template; UI edits to it are lost.
+  jouw betaling verwerkt is." The note added in 19.0.4.0.0 at the end and the paragraph
+  linking to the invoice are dropped. The upgrade reloads the (noupdate) template; UI
+  edits to it are lost.
 
 ## [19.0.4.0.0] — 2026-09-13
 

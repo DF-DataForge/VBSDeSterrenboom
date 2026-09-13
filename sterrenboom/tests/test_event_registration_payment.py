@@ -227,3 +227,6 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
             'De tickets worden doorgestuurd zodra jouw betaling verwerkt is.', mails.body_html
         )
         self.assertNotIn('niet via de website', mails.body_html)
+        # no reference to the invoice: attendees only see the transfer details
+        self.assertNotIn('factuur', mails.body_html)
+        self.assertNotIn(order.invoice_ids.name, mails.body_html)
