@@ -216,6 +216,15 @@ event record. Payment is not collected on the website: confirming a registration
 the sales order and the invoice, and the attendee transfers the amount with the
 structured communication they get on screen and by mail.
 
+### Header image and tickets
+
+*Header Image* on the event (**Events → the event**, next to *Custom Website Page*) is
+shown as a banner across the top of the custom web page and of the tickets. The
+Halloweentocht record ships with the flyer header. The full-page ticket is redesigned
+(`sterrenboom.event_report_template_full_page_ticket_sterrenboom`): banner, event,
+attendee, ticket type, date and venue next to the QR-code, order and ticket reference in
+the footer. Events without an image get a dark banner with the event name.
+
 ### Flyer header image
 
 The page opens with the flyer artwork, **`sterrenboom/static/src/img/halloweentocht.jpg`**,

@@ -14,3 +14,10 @@ class EventEvent(models.Model):
         help="QWeb template rendered instead of the standard event page when a visitor "
              "opens this event on the website. Leave empty to keep the standard page.",
     )
+    sterrenboom_header_image = fields.Image(
+        string='Header Image',
+        max_width=1920,
+        max_height=1920,
+        help="Artwork shown across the top of the event's custom website page and of "
+             "its tickets. A wide banner (about 2:1) works best.",
+    )

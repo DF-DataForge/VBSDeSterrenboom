@@ -36,6 +36,8 @@
             <field name="seats_limited" eval="False"/>
             <field name="website_published" eval="True"/>
             <field name="sterrenboom_page_view_id" ref="event_page_halloweentocht"/>
+            <field name="sterrenboom_header_image" type="base64"
+                   file="sterrenboom/static/src/img/halloweentocht.jpg"/>
             <field name="description" type="html">
                 <div class="oe_structure">
                     <p class="lead">

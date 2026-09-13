@@ -3,6 +3,22 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.5.0] — 2026-09-13
+
+Requires a module upgrade; the migration puts the flyer artwork on the event record.
+
+### Added
+- `event.event.sterrenboom_header_image` (*Header Image*): artwork shown across the top
+  of the event's custom web page and of its tickets. Loaded with the Halloweentocht
+  flyer header; the static JPEG stays as fallback for the page.
+
+### Changed
+- Redesigned full-page ticket (`event.event_report_template_full_page_ticket`): the
+  header image as banner, then event, attendee, ticket type, date and venue next to the
+  QR-code in one card, order and ticket reference in the footer, styled by
+  `static/src/scss/event_ticket_report.scss`. Events without artwork get a dark banner
+  with the event name.
+
 ## [19.0.4.4.0] — 2026-09-13
 
 ### Added

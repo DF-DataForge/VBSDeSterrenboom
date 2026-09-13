@@ -11,6 +11,9 @@
                 <field name="sterrenboom_page_view_id"
                        options="{'no_create': True, 'no_quick_create': True}"
                        groups="event.group_event_manager"/>
+                <field name="sterrenboom_header_image" widget="image"
+                       options="{'size': [240, 0]}"
+                       groups="event.group_event_manager"/>
             </xpath>
         </field>
     </record>

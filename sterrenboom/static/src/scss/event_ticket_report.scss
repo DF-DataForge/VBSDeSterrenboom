@@ -1,0 +1,134 @@
+// Ticket design (sterrenboom.event_report_template_full_page_ticket_sterrenboom).
+// Loaded in web.report_assets_common: PDF and the responsive HTML ticket.
+
+.o_event_full_page_ticket_container .o_sb_ticket_card {
+    $sb-night: #1b1030;
+    $sb-orange: #f4841f;
+    $sb-orange-dark: #c9610a;
+    $sb-muted: #7a7a7a;
+
+    margin: 0 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+
+    .o_sb_ticket_banner {
+        // background-size keeps the artwork's proportions; wkhtmltopdf has no object-fit
+        height: 270px;
+        background: $sb-night center / cover no-repeat;
+        border-bottom: 4px solid $sb-orange;
+    }
+
+    .o_sb_ticket_banner_text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 28px;
+        color: #ffffff;
+        text-align: center;
+        h2 {
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+    }
+
+    .o_sb_ticket_body {
+        padding: 26px 30px 18px;
+    }
+
+    .o_sb_ticket_label {
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: $sb-muted;
+        margin-bottom: 2px;
+    }
+
+    .o_sb_ticket_event {
+        font-size: 18px;
+        font-weight: 700;
+        color: $sb-night;
+    }
+
+    .o_sb_ticket_attendee {
+        font-size: 28px;
+        line-height: 1.15;
+        font-weight: 800;
+        color: $sb-night;
+    }
+
+    .o_sb_ticket_type {
+        display: inline-block;
+        margin-top: 6px;
+        padding: 3px 12px;
+        border-radius: 999px;
+        background: $sb-orange;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .o_sb_ticket_answer {
+        border-radius: 6px;
+        background: #f1ecf5;
+        color: $sb-night;
+        font-size: 12px;
+    }
+
+    .o_sb_ticket_icon {
+        color: $sb-orange-dark;
+    }
+
+    .o_sb_ticket_qr {
+        border-left: 1px dashed #d6d0dd;
+        padding-left: 12px;
+        .o_sb_ticket_qr_img {
+            width: 152px;
+            height: 152px;
+        }
+    }
+
+    .o_sb_ticket_instructions {
+        padding: 0 30px 14px;
+        font-size: 12px;
+        color: #444444;
+    }
+
+    .o_sb_ticket_foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 30px;
+        background: #f6f3f8;
+        border-top: 1px solid #e6e0ea;
+        font-size: 11px;
+        color: $sb-muted;
+
+        .o_sb_ticket_powered_by {
+            color: $sb-muted;
+            text-decoration: none;
+        }
+        .o_sb_ticket_powered_by_logo {
+            height: 18px;
+            vertical-align: middle;
+        }
+    }
+}
+
+.o_event_full_page_ticket_responsive_html .o_sb_ticket_card {
+    margin: 0 auto;
+    .o_sb_ticket_banner {
+        height: 200px;
+    }
+    @media (max-width: 575.98px) {
+        .o_sb_ticket_qr {
+            border-left: 0;
+            padding-left: 0;
+            margin-bottom: 16px;
+        }
+    }
+}

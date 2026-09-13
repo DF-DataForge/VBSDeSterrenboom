@@ -9,9 +9,8 @@ from odoo.tools.misc import file_path
 # _create_attendees_from_registration_post() to registration_confirm().
 SESSION_KEY = 'sterrenboom_registration_ids'
 
-# Flyer header shown at the top of the Halloweentocht page: a web-sized JPEG of
-# "Header halloweentocht.png" from the repository root. The page falls back to the
-# typographic header if the file is ever removed.
+# Fallback flyer header for the Halloweentocht page when the event record carries no
+# Header Image: a web-sized JPEG of "Header halloweentocht.png" from the repository root.
 HEADER_IMAGE = 'sterrenboom/static/src/img/halloweentocht.jpg'
 
 
@@ -30,11 +29,21 @@ class SterrenboomWebsiteEventController(WebsiteEventSaleController):
         if not view_sudo:
             return super().event_register(event, **post)
         values = self._prepare_event_register_values(event, **post)
-        values['sterrenboom_header_image'] = self._sterrenboom_header_image_url()
+        values['sterrenboom_header_image'] = self._sterrenboom_header_image_url(event)
         return request.render(view_sudo.key or view_sudo.id, values)
 
-    def _sterrenboom_header_image_url(self):
-        """URL of the flyer header, or ``False`` when the artwork is missing."""
+    def _sterrenboom_header_image_url(self, event):
+        """URL of the event's header artwork, or ``False`` when there is none.
+
+        The Header Image on the event record wins (the tickets use the same one); the
+        static Halloweentocht flyer is the fallback.
+        """
+        event_sudo = event.sudo()
+        if event_sudo.sterrenboom_header_image:
+            return (
+                f'/web/image/event.event/{event.id}/sterrenboom_header_image'
+                f'?unique={event_sudo.write_date.timestamp():.0f}'
+            )
         try:
             file_path(HEADER_IMAGE, filter_ext=('.jpg', '.jpeg', '.png'))
         except (FileNotFoundError, ValueError):
