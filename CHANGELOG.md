@@ -3,6 +3,30 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.0.0] — 2026-09-13
+
+Tickets are no longer handed out before the money is in. Requires a module upgrade; the
+upgrade rewrites the payment-instructions mail template (UI edits to it are lost).
+
+### Added
+- `sale.order.sterrenboom_tickets_on_hold` / `sterrenboom_tickets_sent_date` and the
+  **Send Tickets** button on the sales order: registers the attendees and mails them the
+  confirmation with the ticket PDF, through the event's *After each registration*
+  communication (or directly when the event has none). Nothing sends tickets
+  automatically, not even the payment.
+- Migration that reloads `data/mail_template_data.xml` on upgrade, since the template is
+  `noupdate`.
+
+### Changed
+- Website registrations are invoiced with the tickets on hold: the attendees stay
+  *Unconfirmed* / *to pay* until the committee clicks **Send Tickets**, so Odoo's
+  confirmation mail with the ticket is not sent at registration time.
+- The confirmation page no longer offers *Download Tickets*; it says the tickets are
+  mailed once the payment is processed, and its title reads "Inschrijving ontvangen!".
+- The payment-instructions mail ends with: "Indien je deze betaling al via de website
+  vervolledigde, mag je deze mail negeren. De tickets worden verstuurd zodra je betaling
+  verwerkt is."
+
 ## [19.0.3.0.0] — 2026-09-12
 
 Website registrations now produce a confirmed sales order and a posted customer invoice,

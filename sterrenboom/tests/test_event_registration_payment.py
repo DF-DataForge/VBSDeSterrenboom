@@ -1,6 +1,7 @@
 from odoo import Command
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.account.tools import is_valid_structured_reference
+from odoo.exceptions import UserError
 from odoo.tests.common import tagged
 
 
@@ -92,6 +93,13 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         ])
         return order, registrations
 
+    def _ticket_mails(self, registrations):
+        """Outgoing mails addressed to these attendees (the confirmation with the ticket)."""
+        return self.env['mail.mail'].search([
+            ('model', '=', 'event.registration'),
+            ('res_id', 'in', registrations.ids),
+        ])
+
     def test_order_is_confirmed_and_invoiced(self):
         order, registrations = self._book()
 
@@ -155,3 +163,64 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         self.assertIn(invoice.payment_reference, mails.body_html)
         self.assertIn(self.bank.acc_number, mails.body_html)
         self.assertIn('Testtocht', mails.body_html)
+
+    def test_invoiced_attendees_wait_for_the_payment(self):
+        order, registrations = self._book()
+
+        order._sterrenboom_invoice_registrations()
+
+        self.assertEqual(order.state, 'sale')
+        self.assertTrue(order.sterrenboom_tickets_on_hold)
+        self.assertFalse(order.sterrenboom_tickets_sent_date)
+        # confirming the order would normally register the attendees and mail the tickets
+        self.assertEqual(set(registrations.mapped('state')), {'draft'})
+        self.assertEqual(set(registrations.mapped('sale_status')), {'to_pay'})
+        self.assertFalse(registrations.mail_registration_ids.filtered('mail_sent'))
+        self.assertFalse(self._ticket_mails(registrations))
+
+    def test_send_tickets_registers_the_attendees_and_mails_them(self):
+        order, registrations = self._book()
+        order._sterrenboom_invoice_registrations()
+
+        order.action_sterrenboom_send_tickets()
+
+        self.assertFalse(order.sterrenboom_tickets_on_hold)
+        self.assertTrue(order.sterrenboom_tickets_sent_date)
+        self.assertEqual(set(registrations.mapped('state')), {'open'})
+        self.assertEqual(set(registrations.mapped('sale_status')), {'sold'})
+        # sent by the event's own "After each registration" communication
+        self.assertEqual(len(registrations.mail_registration_ids.filtered('mail_sent')), 2)
+        mails = self._ticket_mails(registrations)
+        self.assertEqual(len(mails), 2)
+        for mail in mails:
+            self.assertIn('Testtocht', mail.subject)
+
+    def test_send_tickets_without_event_communication_mails_the_confirmation(self):
+        self.event.event_mail_ids.unlink()
+        order, registrations = self._book()
+        order._sterrenboom_invoice_registrations()
+
+        order.action_sterrenboom_send_tickets()
+
+        self.assertEqual(set(registrations.mapped('state')), {'open'})
+        mails = self._ticket_mails(registrations)
+        self.assertEqual(len(mails), 2)
+        self.assertEqual(set(mails.mapped('res_id')), set(registrations.ids))
+
+    def test_send_tickets_twice_is_refused(self):
+        order, _registrations = self._book()
+        order._sterrenboom_invoice_registrations()
+        order.action_sterrenboom_send_tickets()
+
+        with self.assertRaises(UserError):
+            order.action_sterrenboom_send_tickets()
+
+    def test_payment_instructions_mail_says_the_tickets_follow(self):
+        order, registrations = self._book()
+        order._sterrenboom_invoice_registrations()
+
+        mails = registrations._sterrenboom_send_payment_instructions(force_send=False)
+
+        self.assertIn('De tickets worden verstuurd zodra je betaling verwerkt is.', mails.body_html)
+        self.assertIn('mag je deze', mails.body_html)
+        self.assertIn('mail negeren', mails.body_html)
