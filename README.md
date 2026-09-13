@@ -205,10 +205,12 @@ structured communication they get on screen and by mail.
 
 ### Flyer header image
 
-Drop the flyer artwork at **`sterrenboom/static/src/img/halloweentocht.png`** and the page
-uses it as its introduction instead of the typographic title (a visually hidden `<h1>`
-keeps the page readable for screen readers and search engines). While the file is absent
-the page falls back to the text header, so nothing breaks before the artwork is added.
+The page opens with the flyer artwork, **`sterrenboom/static/src/img/halloweentocht.jpg`**,
+a 1600 px wide JPEG made from `Header halloweentocht.png` in the repository root (the
+original is too large to serve to every visitor). A visually hidden `<h1>` keeps the page
+readable for screen readers and search engines, and the date badge is only rendered when
+the artwork, which already shows the date, is missing. To change the header, replace the
+JPEG; if the file is ever removed the page falls back to the typographic title.
 
 The page also hides the website navigation bar (`no_header`), so only the event itself is
 shown.

@@ -36,8 +36,10 @@ installs `event_sale`, `website_event_sale`, `account_qr_code_sepa` and `l10n_be
 - The Halloweentocht page no longer repeats the ticket description under each ticket
   name, and explains that the payment details arrive on screen and by mail.
 - The Halloweentocht page hides the website navigation bar, so only the event is shown.
-- The page uses `static/src/img/halloweentocht.png` as its header when that file is
-  present, and falls back to the typographic title while it is not.
+- The page opens with the flyer artwork (`static/src/img/halloweentocht.jpg`, a web-sized
+  copy of `Header halloweentocht.png`) instead of the typographic title, and hides the
+  date badge the artwork already shows. It falls back to the text header if the file is
+  ever removed.
 
 ### Fixed
 - The Halloweentocht title overflowed the screen on a phone: the hero title, subtitle,
