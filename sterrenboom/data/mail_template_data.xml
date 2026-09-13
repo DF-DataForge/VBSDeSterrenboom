@@ -33,7 +33,12 @@
                     <p t-else="">Je inschrijving is bevestigd. Bedankt!</p>
 
                     <p>
-                        De betaling gebeurt met een gewone overschrijving – niet via de website.
+                        Hieronder vind je de gegevens voor de overschrijving. Indien je deze reeds
+                        via de website betaalde, mag je deze mail negeren.<br/>
+                        De tickets worden doorgestuurd zodra jouw betaling verwerkt is.
+                    </p>
+
+                    <p>
                         Gebruik <strong>exact</strong> de gestructureerde mededeling hieronder, dan
                         wordt je betaling automatisch aan je inschrijving gekoppeld.
                     </p>
@@ -66,16 +71,6 @@
                             <td style="padding: 4px 0;" t-out="format_date(object.invoice_date_due)">01/10/2026</td>
                         </tr>
                     </table>
-
-                    <p>
-                        Je kan de factuur en een QR-code voor je bankapp hier bekijken:
-                        <a t-att-href="object.get_base_url() + object.get_portal_url()" t-out="object.name">INV/2026/00001</a>.
-                    </p>
-
-                    <p>
-                        Indien je deze betaling al via de website vervolledigde, mag je deze
-                        mail negeren. De tickets worden verstuurd zodra je betaling verwerkt is.
-                    </p>
 
                     <p>Tot dan!<br/><t t-out="object.company_id.name">Oudercomité</t></p>
                 </div>

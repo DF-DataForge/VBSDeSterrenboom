@@ -221,6 +221,12 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
 
         mails = registrations._sterrenboom_send_payment_instructions(force_send=False)
 
-        self.assertIn('De tickets worden verstuurd zodra je betaling verwerkt is.', mails.body_html)
-        self.assertIn('mag je deze', mails.body_html)
-        self.assertIn('mail negeren', mails.body_html)
+        self.assertIn('Hieronder vind je de gegevens voor de overschrijving.', mails.body_html)
+        self.assertIn('mag je deze mail negeren', mails.body_html)
+        self.assertIn(
+            'De tickets worden doorgestuurd zodra jouw betaling verwerkt is.', mails.body_html
+        )
+        self.assertNotIn('niet via de website', mails.body_html)
+        # no reference to the invoice: attendees only see the transfer details
+        self.assertNotIn('factuur', mails.body_html)
+        self.assertNotIn(order.invoice_ids.name, mails.body_html)

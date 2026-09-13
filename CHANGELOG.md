@@ -3,6 +3,17 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.1.0] — 2026-09-13
+
+### Changed
+- Payment-instructions mail: the sentence "De betaling gebeurt met een gewone
+  overschrijving – niet via de website" was confusing. After "Bedankt!" the mail now
+  reads: "Hieronder vind je de gegevens voor de overschrijving. Indien je deze reeds via
+  de website betaalde, mag je deze mail negeren. De tickets worden doorgestuurd zodra
+  jouw betaling verwerkt is." The note added in 19.0.4.0.0 at the end and the paragraph
+  linking to the invoice are dropped. The upgrade reloads the (noupdate) template; UI
+  edits to it are lost.
+
 ## [19.0.4.0.0] — 2026-09-13
 
 Tickets are no longer handed out before the money is in. Requires a module upgrade; the
