@@ -40,7 +40,9 @@
                             <h1 class="o_sb_title" t-field="event.name"/>
                             <h2 class="o_sb_subtitle mt-2">Trick or Treat</h2>
                         </t>
-                        <div class="o_sb_date_badge">
+                        <!-- The artwork already shows the date; the "Praktisch" block keeps
+                             the live one from the record. -->
+                        <div t-if="not sterrenboom_header_image" class="o_sb_date_badge">
                             <i class="fa fa-calendar me-2" role="img" aria-label="Datum"/>
                             <t t-out="event.date_begin"
                                t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'EEEE d/MM'}"/>

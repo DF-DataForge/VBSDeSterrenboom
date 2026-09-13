@@ -9,9 +9,10 @@ from odoo.tools.misc import file_path
 # _create_attendees_from_registration_post() to registration_confirm().
 SESSION_KEY = 'sterrenboom_registration_ids'
 
-# Flyer header shown at the top of the Halloweentocht page. Drop the artwork at this
-# path to use it; the page falls back to the typographic header while it is missing.
-HEADER_IMAGE = 'sterrenboom/static/src/img/halloweentocht.png'
+# Flyer header shown at the top of the Halloweentocht page: a web-sized JPEG of
+# "Header halloweentocht.png" from the repository root. The page falls back to the
+# typographic header if the file is ever removed.
+HEADER_IMAGE = 'sterrenboom/static/src/img/halloweentocht.jpg'
 
 
 class SterrenboomWebsiteEventController(WebsiteEventSaleController):
@@ -33,9 +34,9 @@ class SterrenboomWebsiteEventController(WebsiteEventSaleController):
         return request.render(view_sudo.key or view_sudo.id, values)
 
     def _sterrenboom_header_image_url(self):
-        """URL of the flyer header, or ``False`` while the artwork has not been added."""
+        """URL of the flyer header, or ``False`` when the artwork is missing."""
         try:
-            file_path(HEADER_IMAGE, filter_ext=('.png',))
+            file_path(HEADER_IMAGE, filter_ext=('.jpg', '.jpeg', '.png'))
         except (FileNotFoundError, ValueError):
             return False
         return f'/{HEADER_IMAGE}'
