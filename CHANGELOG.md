@@ -3,6 +3,16 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.3.0] — 2026-09-13
+
+### Changed
+- **Send Tickets** stays available on every confirmed sales order with attendees, not
+  only while the tickets are on hold, so tickets can be sent again (e.g. after a
+  bounce). A later click sends Odoo's confirmation mail with the ticket PDF directly.
+- The ticket mails are delivered immediately instead of waiting for the mail queue, and
+  a sticky popup reports how many were sent and which ones failed, with the reason.
+  The same summary is logged in the order's chatter.
+
 ## [19.0.4.2.0] — 2026-09-13
 
 Outgoing mails authored by OdooBot (activity assignments), the public website user or

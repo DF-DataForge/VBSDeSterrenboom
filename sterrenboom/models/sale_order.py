@@ -78,33 +78,79 @@ class SaleOrder(models.Model):
             return empty
 
     def action_sterrenboom_send_tickets(self):
-        """Register the attendees of these orders and mail them their tickets.
+        """Register the attendees of this order and mail them their tickets, now.
 
         For the committee to click once the bank transfer for the invoice has been
-        processed; nothing triggers it automatically. Releasing the hold recomputes the
-        attendees to Registered, which runs the event's "After each registration"
-        communication: Odoo's confirmation mail with the ticket PDF attached. Events
-        without such a communication get that mail sent directly.
+        processed; nothing triggers it automatically. The first click releases the
+        hold set by the website flow, which registers the attendees and runs the
+        event's "After each registration" communication (Odoo's confirmation mail with
+        the ticket PDF). Attendees that communication does not cover, and every later
+        click (a resend, e.g. after a bounce), get that same confirmation mail sent
+        directly. The mails are delivered immediately instead of waiting for the mail
+        queue, and the outcome is reported in a notification.
         """
-        for order in self:
-            if not order.sterrenboom_tickets_on_hold:
-                raise UserError(_(
-                    "The tickets of %(order)s are not on hold: they were either sent "
-                    "already or the order was not booked on the website.",
-                    order=order.name,
-                ))
-            registrations = order._sterrenboom_registrations()
-            if not registrations:
-                raise UserError(_("There are no attendees to send tickets to on %s.", order.name))
-            order.sterrenboom_tickets_on_hold = False
+        self.ensure_one()
+        registrations = self._sterrenboom_registrations()
+        if not registrations:
+            raise UserError(_("There are no attendees to send tickets to on %s.", self.name))
+        if self.state != 'sale':
+            raise UserError(_("Confirm %s before sending its tickets.", self.name))
+
+        Mail = self.env['mail.mail'].sudo()
+        mail_domain = [('model', '=', 'event.registration'), ('res_id', 'in', registrations.ids)]
+        known_mail_ids = set(Mail.search(mail_domain).ids)
+
+        if self.sterrenboom_tickets_on_hold:
+            self.sterrenboom_tickets_on_hold = False
             # Recompute the attendee state now: that is what runs the event's
-            # communication, and the fallback below needs the final state.
+            # communication for the attendees it covers.
             registrations.flush_recordset(['state'])
-            registrations._sterrenboom_send_ticket_mail_fallback()
-            order.sterrenboom_tickets_sent_date = fields.Datetime.now()
-            order.message_post(body=_(
-                "Tickets sent to %(count)s attendee(s): %(names)s.",
-                count=len(registrations),
-                names=', '.join(registrations.mapped('display_name')),
-            ))
-        return True
+        registrations.filtered(lambda reg: reg.state == 'draft').action_confirm()
+
+        # Whoever the communication did not just mail gets the confirmation directly:
+        # events without such a communication, and resends.
+        new_mails = Mail.search(mail_domain).filtered(lambda mail: mail.id not in known_mail_ids)
+        mailed = registrations.filtered(lambda reg: reg.id in set(new_mails.mapped('res_id')))
+        (registrations - mailed)._sterrenboom_send_ticket_mail()
+        new_mails = Mail.search(mail_domain).filtered(lambda mail: mail.id not in known_mail_ids)
+
+        # Deliver now, so the committee sees a bounce here rather than in the mail queue.
+        new_mails.send(auto_commit=False, raise_exception=False)
+        failed = new_mails.exists().filtered(lambda mail: mail.state == 'exception')
+        sent_count = len(new_mails) - len(failed)
+
+        self.sterrenboom_tickets_sent_date = fields.Datetime.now()
+        names = ', '.join(registrations.mapped('display_name'))
+        if failed:
+            reasons = '; '.join(
+                f"{mail.email_to or mail.recipient_ids.mapped('email')}: "
+                f"{mail.failure_reason or mail.failure_type or _('unknown reason')}"
+                for mail in failed
+            )
+            body = _(
+                "Tickets: %(sent)s mail(s) sent, %(failed)s failed (%(reasons)s). "
+                "Attendees: %(names)s.",
+                sent=sent_count, failed=len(failed), reasons=reasons, names=names,
+            )
+            self.message_post(body=body)
+            return self._sterrenboom_notify(_("Tickets partly sent"), body, 'warning')
+        body = _(
+            "Tickets sent to %(count)s attendee(s) in %(mails)s mail(s): %(names)s.",
+            count=len(registrations), mails=sent_count, names=names,
+        )
+        self.message_post(body=body)
+        return self._sterrenboom_notify(_("Tickets sent"), body, 'success')
+
+    def _sterrenboom_notify(self, title, message, level):
+        """Sticky popup shown to the user who clicked the button."""
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': message,
+                'type': level,
+                'sticky': True,
+                'next': {'type': 'ir.actions.act_window_close'},
+            },
+        }

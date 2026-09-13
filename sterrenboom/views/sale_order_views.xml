@@ -11,12 +11,12 @@
                         string="Send Tickets"
                         type="object"
                         class="btn-primary"
-                        invisible="not sterrenboom_tickets_on_hold"
-                        confirm="The attendees will be registered and mailed their tickets. Only do this once the bank transfer has been processed. Continue?"/>
+                        invisible="attendee_count == 0 or state != 'sale'"
+                        confirm="The attendees will be registered and mailed their tickets (again, if they were sent before). Only do this once the bank transfer has been processed. Continue?"/>
             </xpath>
             <xpath expr="//page[@name='other_information']//group[@name='sale_info']" position="inside">
                 <field name="sterrenboom_tickets_on_hold" readonly="1"
-                       invisible="not sterrenboom_tickets_on_hold and not sterrenboom_tickets_sent_date"/>
+                       invisible="not sterrenboom_tickets_on_hold"/>
                 <field name="sterrenboom_tickets_sent_date"
                        invisible="not sterrenboom_tickets_sent_date"/>
             </xpath>

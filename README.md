@@ -180,8 +180,10 @@ the attendee details and confirms:
    sales order (**Sales → Orders**, or the invoice's *Source Document*) and clicks
    **Send Tickets**. That registers the attendees, which runs the event's *After each
    registration* communication — Odoo's confirmation mail with the ticket PDF — and
-   records *Tickets Sent On* on the order. Events without such a communication get that
-   mail sent directly.
+   records *Tickets Sent On* on the order. Events without such a communication, and
+   every later click (a resend, e.g. after a bounce), get that mail sent directly. The
+   mails are delivered on the spot and a popup reports what was sent or what failed.
+   The button is available on every confirmed order with attendees.
 
 ### What the committee has to configure once
 
