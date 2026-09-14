@@ -201,8 +201,14 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         self.assertIn('piet@example.com', mails.email_to)
         self.assertIn('Testtocht', mails.subject)
         self.assertIn('Mila Van Haute', mails.body_html)
-        self.assertEqual(len(mails.attachment_ids), 2)
-        self.assertTrue(all(name.endswith('.pdf') for name in mails.attachment_ids.mapped('name')))
+        # all tickets in one PDF
+        self.assertEqual(len(mails.attachment_ids), 1)
+        self.assertEqual(mails.attachment_ids.name, f'Tickets - Testtocht - {order.name}.pdf')
+        # the mail is the only chatter entry carrying the PDF: no duplicate note with it
+        messages_with_pdf = order.message_ids.filtered(
+            lambda message: mails.attachment_ids in message.attachment_ids
+        )
+        self.assertEqual(len(messages_with_pdf), 1)
         # Odoo's per-attendee confirmation mail was neither sent nor left for the cron
         self.assertFalse(self._ticket_mails(registrations))
         self.assertEqual(len(registrations.mail_registration_ids.filtered('mail_sent')), 2)
@@ -222,7 +228,7 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         self.assertEqual(set(registrations.mapped('state')), {'open'})
         mails = self._tickets_mails(order)
         self.assertEqual(len(mails), 1)
-        self.assertEqual(len(mails.attachment_ids), 2)
+        self.assertEqual(len(mails.attachment_ids), 1)
         self.assertEqual(action['params']['type'], 'success')
 
     def test_send_tickets_again_resends_them(self):

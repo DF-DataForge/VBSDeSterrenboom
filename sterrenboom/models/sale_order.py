@@ -116,39 +116,38 @@ class SaleOrder(models.Model):
                 email=mail.email_to, names=names,
                 reason=mail.failure_reason or mail.failure_type or _("unknown reason"),
             )
-            self.message_post(body=body)
+            self._message_log(body=body)
             return self._sterrenboom_notify(_("Tickets not sent"), body, 'danger')
         body = _(
             "Tickets for %(count)s attendee(s) sent to %(email)s: %(names)s.",
             count=len(registrations), email=mail.email_to, names=names,
         )
-        self.message_post(body=body, attachment_ids=mail.attachment_ids.ids)
+        # A plain log line: the mail itself already shows in the chatter with the PDF,
+        # and a note with attachments would look like a second tickets mail (and could
+        # notify followers).
+        self._message_log(body=body)
         return self._sterrenboom_notify(_("Tickets sent"), body, 'success')
 
-    def _sterrenboom_ticket_attachments(self, registrations):
-        """One full-page ticket PDF per attendee, attached to this order."""
-        Report = self.env['ir.actions.report'].sudo()
-        attachments = self.env['ir.attachment'].sudo()
-        for registration in registrations:
-            pdf, _report_type = Report._render_qweb_pdf(
-                'event.action_report_event_registration_full_page_ticket', registration.ids,
-            )
-            name = f"Ticket - {registration.event_id.name} - {registration.name}.pdf"
-            attachments |= attachments.create({
-                'name': name.replace('/', '-'),
-                'type': 'binary',
-                'raw': pdf,
-                'mimetype': 'application/pdf',
-                'res_model': self._name,
-                'res_id': self.id,
-            })
-        return attachments
+    def _sterrenboom_tickets_attachment(self, registrations):
+        """One PDF with all the attendees' full-page tickets, attached to this order."""
+        pdf, _report_type = self.env['ir.actions.report'].sudo()._render_qweb_pdf(
+            'event.action_report_event_registration_full_page_ticket', registrations.ids,
+        )
+        events = ', '.join(registrations.event_id.mapped('name'))
+        return self.env['ir.attachment'].sudo().create({
+            'name': f"Tickets - {events} - {self.name}.pdf".replace('/', '-'),
+            'type': 'binary',
+            'raw': pdf,
+            'mimetype': 'application/pdf',
+            'res_model': self._name,
+            'res_id': self.id,
+        })
 
     def _sterrenboom_send_tickets_mail(self, registrations):
         """Queue the tickets mail for this order and return the ``mail.mail``.
 
         Addressed to the customer (the person who booked); attendee addresses are the
-        fallback when the customer has none.
+        fallback when the customer has none. All tickets go in one PDF.
         """
         self.ensure_one()
         template = self.env.ref('sterrenboom.mail_template_tickets')
@@ -158,13 +157,13 @@ class SaleOrder(models.Model):
             raise UserError(_(
                 "Neither the customer nor the attendees of %s have an email address.", self.name,
             ))
-        attachments = self._sterrenboom_ticket_attachments(registrations)
+        attachment = self._sterrenboom_tickets_attachment(registrations)
         mail_id = template.sudo().send_mail(
             self.id,
             force_send=False,
             email_values={
                 'email_to': ','.join(emails),
-                'attachment_ids': [(4, attachment.id) for attachment in attachments],
+                'attachment_ids': [(4, attachment.id)],
             },
         )
         return self.env['mail.mail'].sudo().browse(mail_id)
