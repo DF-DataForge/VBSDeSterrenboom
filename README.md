@@ -181,8 +181,8 @@ the attendee details and confirms:
    matching. Nothing happens automatically after that: a committee member opens the
    sales order (**Sales → Orders**, or the invoice's *Source Document*) and clicks
    **Send Tickets**. That registers the attendees and sends **one mail per order** to
-   the customer (`sterrenboom.mail_template_tickets`) with every attendee's ticket PDF
-   attached; the attachments stay on the order. The event's *After each registration*
+   the customer (`sterrenboom.mail_template_tickets`) with one PDF holding every
+   attendee's ticket; the PDF stays on the order. The event's *After each registration*
    communication is skipped for these attendees and marked as done, so Odoo does not
    also mail each attendee separately. The mail is delivered on the spot, a popup
    reports the outcome, and *Tickets Sent On* is recorded. Every later click sends the

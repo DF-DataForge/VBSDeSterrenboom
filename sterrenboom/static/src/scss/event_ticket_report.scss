@@ -95,12 +95,20 @@
         color: $sb-orange-dark;
     }
 
+    // Details 72% / QR 28%: the core 78/22 split left the 152 px QR-code touching the
+    // card's right edge in the PDF.
+    .o_sb_ticket_main {
+        width: 72%;
+    }
+
     .o_sb_ticket_qr {
+        width: 28%;
+        box-sizing: border-box;
         border-left: 1px dashed #d6d0dd;
-        padding-left: 12px;
+        padding: 0 16px;
         .o_sb_ticket_qr_img {
-            width: 152px;
-            height: 152px;
+            width: 140px;
+            height: 140px;
         }
     }
 

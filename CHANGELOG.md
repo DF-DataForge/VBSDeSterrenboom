@@ -3,6 +3,19 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.9.0] — 2026-09-14
+
+### Changed
+- The tickets mail carries **one PDF with all tickets** of the order
+  (`Tickets - <event> - <order>.pdf`) instead of one PDF per attendee.
+- The QR-code on the ticket no longer touches the right edge: the details/QR split is
+  72/28 with padding around a 140 px code.
+
+### Fixed
+- After sending the tickets, the order's chatter showed a second entry with the same
+  PDFs (a note with attachments next to the mail itself), which read as the mail having
+  been sent twice and could notify followers. Send Tickets now only logs a plain line.
+
 ## [19.0.4.8.0] — 2026-09-14
 
 Requires a module upgrade; the migration reloads the payment mail template (UI edits to
