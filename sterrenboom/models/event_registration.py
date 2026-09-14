@@ -99,7 +99,8 @@ class EventRegistration(models.Model):
             return template.sudo().send_mail_batch(
                 [invoice.id],
                 force_send=force_send,
-                email_values={'email_to': ','.join(emails)},
+                # Addresses only: a partner in recipient_ids would get a second copy.
+                email_values={'email_to': ','.join(emails), 'recipient_ids': []},
             )
         except Exception:  # a failed mail must never fail the registration
             _logger.exception(

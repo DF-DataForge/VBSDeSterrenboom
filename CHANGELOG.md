@@ -3,6 +3,19 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.10.0] — 2026-09-14
+
+Requires a module upgrade; the migration reloads both mail templates (UI edits to them
+are lost).
+
+### Fixed
+- The tickets mail was delivered **twice** to the customer. Both mail templates left
+  Odoo's *Default Recipients* option on, which adds the order's customer as a partner
+  recipient on top of the addresses in *To*; Odoo then sends one message per partner
+  and one for the addresses. The option is now off and the send code clears the partner
+  recipients, so one click is one mail. The payment-instructions mail had the same
+  double recipient and is fixed the same way.
+
 ## [19.0.4.9.0] — 2026-09-14
 
 ### Changed
