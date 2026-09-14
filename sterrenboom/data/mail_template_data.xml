@@ -14,6 +14,9 @@
             <field name="model_id" ref="account.model_account_move"/>
             <field name="subject">Betalingsinstructies – {{ object.company_id.name }}</field>
             <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <!-- Recipients come from email_to only. With "Default Recipients" on, Odoo also
+                 adds the customer as a partner recipient and mails the same address twice. -->
+            <field name="use_default_to" eval="False"/>
             <field name="email_to">{{ object.partner_id.email_formatted }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -99,6 +102,7 @@
             <field name="model_id" ref="sale.model_sale_order"/>
             <field name="subject">Je tickets voor {{ ', '.join(object.order_line.registration_ids.event_id.mapped('name')) or object.name }}</field>
             <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="use_default_to" eval="False"/>
             <field name="email_to">{{ object.partner_id.email_formatted }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>

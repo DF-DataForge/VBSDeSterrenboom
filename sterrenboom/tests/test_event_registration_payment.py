@@ -160,6 +160,9 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         self.assertEqual(len(mails), 1)
         self.assertIn('piet@example.com', mails.email_to)
         self.assertIn('mila@example.com', mails.email_to)
+        # one message to both addresses, nobody listed a second time as a partner
+        self.assertFalse(mails.recipient_ids)
+        self.assertEqual(len(mails._prepare_outgoing_list()), 1)
         self.assertIn(invoice.payment_reference, mails.body_html)
         self.assertIn(self.bank.acc_number, mails.body_html)
         self.assertIn('Testtocht', mails.body_html)
@@ -199,6 +202,12 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         mails = self._tickets_mails(order)
         self.assertEqual(len(mails), 1)
         self.assertIn('piet@example.com', mails.email_to)
+        # ... and exactly one message goes out: the customer is addressed by email only,
+        # not once more as a partner recipient (that is what delivered the mail twice)
+        self.assertFalse(mails.recipient_ids)
+        outgoing = mails._prepare_outgoing_list()
+        self.assertEqual(len(outgoing), 1)
+        self.assertEqual(outgoing[0]['email_to_normalized'], ['piet@example.com'])
         self.assertIn('Testtocht', mails.subject)
         self.assertIn('Mila Van Haute', mails.body_html)
         # all tickets in one PDF

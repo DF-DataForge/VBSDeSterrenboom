@@ -163,6 +163,11 @@ class SaleOrder(models.Model):
             force_send=False,
             email_values={
                 'email_to': ','.join(emails),
+                # Odoo sends one message per partner in recipient_ids *and* one for
+                # email_to; the customer must only be in the latter or they get the
+                # tickets twice (also guards against "Default Recipients" being switched
+                # back on in the template).
+                'recipient_ids': [],
                 'attachment_ids': [(4, attachment.id)],
             },
         )
