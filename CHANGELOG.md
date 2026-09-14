@@ -3,6 +3,19 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.7.0] — 2026-09-14
+
+Requires a module upgrade. **Set the company email address (Settings → Companies) to the
+committee mailbox**; the module configures the rest from it.
+
+### Fixed
+- Outgoing mails still bounced: the company had no email address (so website mails had
+  no sender at all) and the Gmail server was a *personal* one, owned by the OC user,
+  which Odoo only uses for mails that user authors. The mail identity hook now makes a
+  personal server for the company mailbox company-wide, survives alias clashes with a
+  warning instead of failing the upgrade, and runs again whenever a company email
+  address is set (`res.company.write`), so filling in the email is enough.
+
 ## [19.0.4.6.0] — 2026-09-14
 
 Requires a module upgrade (new mail template).

@@ -1,5 +1,6 @@
 import logging
 
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools import email_normalize
 
 _logger = logging.getLogger(__name__)
@@ -45,10 +46,16 @@ def _apply_outgoing_mail_identity(env):
     * *FROM Filtering* = ``oc@example.org`` on outgoing mail servers that have none,
       which is what makes the rewrite kick in for every other sender.
 
+    A *personal* outgoing server for that mailbox (one with an owner, as Odoo creates
+    for a Gmail or Outlook account connected from a user's preferences) only serves
+    mails that user authors, so it is made company-wide first.
+
     Companies without an email address, or already using an alias domain for another
-    domain name, are left alone. Aliases the committee changed by hand are kept.
+    domain name, are left alone. Aliases the committee changed by hand are kept. Runs at
+    install, on upgrade and whenever a company email address is set.
     """
     AliasDomain = env['mail.alias.domain'].sudo()
+    IrMailServer = env['ir.mail_server'].sudo()
     for company in env['res.company'].sudo().search([]):
         email = email_normalize(company.email or '')
         if not email:
@@ -58,6 +65,19 @@ def _apply_outgoing_mail_identity(env):
             )
             continue
         local_part, domain_name = email.split('@', 1)
+
+        personal_servers = IrMailServer.search([('owner_user_id', '!=', False)]).filtered(
+            lambda server, mailbox=email: (
+                server.from_filter and IrMailServer._match_from_filter(mailbox, server.from_filter)
+            ) or email_normalize(server.smtp_user or '') == mailbox
+        )
+        if personal_servers:
+            personal_servers.write({'owner_user_id': False})
+            _logger.info(
+                "sterrenboom: outgoing mail server(s) %s now serve the whole company instead "
+                "of their owner only", ', '.join(personal_servers.mapped('name')),
+            )
+
         alias_domain = company.alias_domain_id
         if alias_domain and alias_domain.name != domain_name:
             _logger.warning(
@@ -67,25 +87,35 @@ def _apply_outgoing_mail_identity(env):
             continue
         if not alias_domain:
             alias_domain = AliasDomain.search([('name', '=', domain_name)], limit=1)
-        if not alias_domain:
-            alias_domain = AliasDomain.create({
-                'name': domain_name,
-                'default_from': local_part,
-                'catchall_alias': local_part,
-                'bounce_alias': local_part,
-            })
-            _logger.info("sterrenboom: created alias domain %s sending as %s", domain_name, email)
-        else:
-            values = {}
-            if email_normalize(alias_domain.default_from_email or '') != email:
-                values['default_from'] = local_part
-            # only replace Odoo's defaults, not aliases the committee chose
-            if alias_domain.catchall_alias == 'catchall':
-                values['catchall_alias'] = local_part
-            if alias_domain.bounce_alias == 'bounce':
-                values['bounce_alias'] = local_part
-            if values:
-                alias_domain.write(values)
+        try:
+            if not alias_domain:
+                alias_domain = AliasDomain.create({
+                    'name': domain_name,
+                    'default_from': local_part,
+                    'catchall_alias': local_part,
+                    'bounce_alias': local_part,
+                })
+                _logger.info(
+                    "sterrenboom: created alias domain %s sending as %s", domain_name, email,
+                )
+            else:
+                values = {}
+                if email_normalize(alias_domain.default_from_email or '') != email:
+                    values['default_from'] = local_part
+                # only replace Odoo's defaults, not aliases the committee chose
+                if alias_domain.catchall_alias == 'catchall':
+                    values['catchall_alias'] = local_part
+                if alias_domain.bounce_alias == 'bounce':
+                    values['bounce_alias'] = local_part
+                if values:
+                    alias_domain.write(values)
+        except (UserError, ValidationError) as error:
+            # e.g. the alias clashes with an existing one; never block an upgrade or a
+            # company edit over the mail configuration
+            _logger.warning(
+                "sterrenboom: could not configure the alias domain for %s: %s", email, error,
+            )
+            continue
         if company.alias_domain_id != alias_domain:
             company.alias_domain_id = alias_domain
 
