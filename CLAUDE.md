@@ -36,6 +36,9 @@ Odoo 19 renamed a lot. When writing or reviewing code here:
   fail RNG validation ("Invalid attribute expand for element group").
 - Give every field a distinct label per model, otherwise Odoo logs a "same label" warning.
 - Translations: `_("text %s", value)`, never `%`-interpolation inside `_()`.
+- PDF reports render in wkhtmltopdf (old WebKit): no `object-fit`, no `background`
+  shorthand with `position / size` (use longhand properties), prefix `background-size`
+  with `-webkit-`. Check a real PDF, the HTML preview in the browser hides these.
 
 Check `https://raw.githubusercontent.com/odoo/odoo/19.0/...` when unsure; the rendered
 docs site is JS-heavy and WebFetch only returns its nav.

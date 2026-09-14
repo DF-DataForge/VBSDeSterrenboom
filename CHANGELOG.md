@@ -3,6 +3,13 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.5.2] — 2026-09-14
+
+### Fixed
+- Ticket banner in the PDF showed the artwork at natural size, cropped to its left part:
+  wkhtmltopdf ignores the `background` shorthand with `position / size`. Longhand
+  properties (and `-webkit-background-size`) restore the centred, covering banner.
+
 ## [19.0.4.5.1] — 2026-09-14
 
 ### Fixed
