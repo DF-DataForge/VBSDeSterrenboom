@@ -3,6 +3,12 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.5.1] — 2026-09-14
+
+### Fixed
+- Ticket banner: sized to the flyer header's proportions instead of a fixed height, so
+  the artwork's title is no longer cropped.
+
 ## [19.0.4.5.0] — 2026-09-13
 
 Requires a module upgrade; the migration puts the flyer artwork on the event record.

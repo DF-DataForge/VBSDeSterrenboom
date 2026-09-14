@@ -16,13 +16,18 @@
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
 
     .o_sb_ticket_banner {
-        // background-size keeps the artwork's proportions; wkhtmltopdf has no object-fit
-        height: 270px;
+        // A box with the flyer header's 2.17:1 ratio (padding in % of the width), so the
+        // whole artwork shows instead of being cropped. Other artwork is centred and
+        // covers the box; wkhtmltopdf has no object-fit, hence a background image.
+        height: 0;
+        padding-bottom: 46%;
         background: $sb-night center / cover no-repeat;
         border-bottom: 4px solid $sb-orange;
     }
 
     .o_sb_ticket_banner_text {
+        height: 180px;
+        padding-bottom: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -121,8 +126,9 @@
 
 .o_event_full_page_ticket_responsive_html .o_sb_ticket_card {
     margin: 0 auto;
-    .o_sb_ticket_banner {
-        height: 200px;
+    .o_sb_ticket_banner_text {
+        height: 160px;
+        padding-bottom: 0;
     }
     @media (max-width: 575.98px) {
         .o_sb_ticket_qr {
