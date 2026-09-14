@@ -90,13 +90,24 @@ class TestOutgoingMailIdentity(TransactionCase):
         self.assertEqual(alias_domain.default_from, 'notifications')
         self.assertFalse(self.server.from_filter)
 
-    def test_company_without_email_is_left_alone(self):
+    def test_company_without_email_takes_the_mail_server_mailbox(self):
         self.company.email = False
 
         _apply_outgoing_mail_identity(self.env)
 
+        # cls.server logs in as the mailbox: adopted as company email and sender
+        self.assertEqual(self.company.email, self.EMAIL)
+        self.assertEqual(self.company.default_from_email, self.EMAIL)
+        self.assertEqual(self.server.from_filter, self.EMAIL)
+
+    def test_nothing_to_go_on_is_left_alone(self):
+        self.company.email = False
+        (self.server | self.other_server).unlink()
+
+        _apply_outgoing_mail_identity(self.env)
+
+        self.assertFalse(self.company.email)
         self.assertFalse(self.company.alias_domain_id)
-        self.assertFalse(self.server.from_filter)
 
     def test_personal_server_for_the_mailbox_is_shared(self):
         # what Odoo creates when the mailbox is connected from a user's preferences

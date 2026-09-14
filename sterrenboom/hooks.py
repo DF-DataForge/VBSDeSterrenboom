@@ -31,6 +31,16 @@ def _apply_structured_communication(env):
         )
 
 
+def _mail_server_mailbox(env):
+    """The address an outgoing mail server authenticates with, if any is an address."""
+    for server in env['ir.mail_server'].sudo().search([], order='sequence, id'):
+        for candidate in (server.smtp_user, server.from_filter):
+            email = email_normalize(candidate or '')
+            if email:
+                return email
+    return False
+
+
 def _apply_outgoing_mail_identity(env):
     """Send every outgoing mail from the company mailbox.
 
@@ -59,11 +69,19 @@ def _apply_outgoing_mail_identity(env):
     for company in env['res.company'].sudo().search([]):
         email = email_normalize(company.email or '')
         if not email:
-            _logger.warning(
-                "sterrenboom: company %s has no email address, outgoing mails keep their "
-                "own sender and may be refused by the mail server", company.name,
-            )
-            continue
+            # No company email yet: the mailbox the outgoing server logs in with is the
+            # one everything has to be sent as, so adopt it as the company email too
+            # (the payment and tickets mails take their sender from it).
+            email = _mail_server_mailbox(env)
+            if not email:
+                _logger.warning(
+                    "sterrenboom: company %s has no email address and no outgoing mail "
+                    "server with one; outgoing mails keep their own sender and may be "
+                    "refused by the mail server", company.name,
+                )
+                continue
+            company.with_context(sterrenboom_skip_mail_identity=True).email = email
+            _logger.info("sterrenboom: company %s email set to %s", company.name, email)
         local_part, domain_name = email.split('@', 1)
 
         personal_servers = IrMailServer.search([('owner_user_id', '!=', False)]).filtered(
