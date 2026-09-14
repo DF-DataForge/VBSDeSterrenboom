@@ -13,7 +13,8 @@ class TestOutgoingMailIdentity(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.company = cls.env.company
-        cls.company.email = cls.EMAIL
+        # setting the email applies the configuration; the tests do that explicitly
+        cls.company.with_context(sterrenboom_skip_mail_identity=True).email = cls.EMAIL
         cls.company.alias_domain_id = False
         cls.server = cls.env['ir.mail_server'].create({
             'name': 'OC mailbox',
@@ -89,10 +90,48 @@ class TestOutgoingMailIdentity(TransactionCase):
         self.assertEqual(alias_domain.default_from, 'notifications')
         self.assertFalse(self.server.from_filter)
 
-    def test_company_without_email_is_left_alone(self):
+    def test_company_without_email_takes_the_mail_server_mailbox(self):
         self.company.email = False
 
         _apply_outgoing_mail_identity(self.env)
 
+        # cls.server logs in as the mailbox: adopted as company email and sender
+        self.assertEqual(self.company.email, self.EMAIL)
+        self.assertEqual(self.company.default_from_email, self.EMAIL)
+        self.assertEqual(self.server.from_filter, self.EMAIL)
+
+    def test_nothing_to_go_on_is_left_alone(self):
+        self.company.email = False
+        (self.server | self.other_server).unlink()
+
+        _apply_outgoing_mail_identity(self.env)
+
+        self.assertFalse(self.company.email)
         self.assertFalse(self.company.alias_domain_id)
-        self.assertFalse(self.server.from_filter)
+
+    def test_personal_server_for_the_mailbox_is_shared(self):
+        # what Odoo creates when the mailbox is connected from a user's preferences
+        personal = self.env['ir.mail_server'].create({
+            'name': 'Gmail of the OC user',
+            'smtp_host': 'smtp.gmail.example',
+            'smtp_user': self.EMAIL,
+            'from_filter': self.EMAIL,
+            'owner_user_id': self.env.user.id,
+        })
+        self.server.unlink()
+
+        _apply_outgoing_mail_identity(self.env)
+
+        self.assertFalse(personal.owner_user_id)
+        self.assertEqual(self.company.default_from_email, self.EMAIL)
+        server, smtp_from = self.env['ir.mail_server']._find_mail_server(
+            '"OdooBot" <odoobot@example.com>', personal | self.other_server,
+        )
+        self.assertEqual(server, personal)
+        self.assertEqual(email_normalize(smtp_from), self.EMAIL)
+
+    def test_setting_the_company_email_applies_the_configuration(self):
+        self.company.email = 'committee@sterrenboom-test.example'
+
+        self.assertEqual(self.company.default_from_email, 'committee@sterrenboom-test.example')
+        self.assertEqual(self.server.from_filter, 'committee@sterrenboom-test.example')
