@@ -1,8 +1,10 @@
+from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
 
 from odoo import http
 from odoo.addons.website_event_sale.controllers.main import WebsiteEventSaleController
 from odoo.http import request
+from odoo.tools import consteq
 from odoo.tools.misc import file_path
 
 # Registrations created by the request currently being processed, handed from
@@ -49,6 +51,29 @@ class SterrenboomWebsiteEventController(WebsiteEventSaleController):
         except (FileNotFoundError, ValueError):
             return False
         return f'/{HEADER_IMAGE}'
+
+    @http.route(['/sterrenboom/payment_qr/<int:invoice_id>'], type='http', auth='public',
+                methods=['GET'], website=True, sitemap=False)
+    def payment_qr(self, invoice_id, access_token=None, **kwargs):
+        """The SEPA QR-code of an invoice as PNG, for the payment-instructions mail.
+
+        Guarded by the invoice's portal access token: whoever received the mail holds
+        it, nobody else can enumerate invoices.
+        """
+        invoice_sudo = request.env['account.move'].sudo().browse(invoice_id).exists()
+        if (
+            not invoice_sudo or not access_token or not invoice_sudo.access_token
+            or not consteq(invoice_sudo.access_token, access_token)
+        ):
+            raise NotFound()
+        png = invoice_sudo._sterrenboom_payment_qr_png()
+        if not png:
+            raise NotFound()
+        return request.make_response(png, headers=[
+            ('Content-Type', 'image/png'),
+            ('Content-Length', str(len(png))),
+            ('Cache-Control', 'private, max-age=3600'),
+        ])
 
     def _create_attendees_from_registration_post(self, event, registration_data):
         """Remember what was booked so registration_confirm() can invoice it."""

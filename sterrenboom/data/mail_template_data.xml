@@ -72,6 +72,18 @@
                         </tr>
                     </table>
 
+                    <!-- Served by /sterrenboom/payment_qr (mail clients drop embedded images). -->
+                    <t t-set="qr_url" t-value="object._sterrenboom_payment_qr_url()"/>
+                    <div t-if="qr_url" style="margin: 16px 0;">
+                        <p style="margin: 0 0 8px 0;">
+                            Of scan deze QR-code met je bankapp: bedrag, rekening en mededeling worden
+                            dan automatisch ingevuld.
+                        </p>
+                        <img t-att-src="object.get_base_url() + qr_url" width="160" height="160"
+                             alt="QR-code om te betalen met je bankapp"
+                             style="width: 160px; height: 160px; display: block;"/>
+                    </div>
+
                     <p>Tot dan!<br/><t t-out="object.company_id.name">Oudercomité</t></p>
                 </div>
             </field>

@@ -172,8 +172,10 @@ the attendee details and confirms:
    same QR-code Odoo prints on an invoice PDF, so any banking app can scan it. There is
    no ticket download: the page says the tickets follow once the payment is processed.
 4. The attendees are mailed the same instructions
-   (`sterrenboom.mail_template_registration_payment`), with the note that the tickets
-   follow once the payment is processed. The mail does not mention the invoice.
+   (`sterrenboom.mail_template_registration_payment`), including the SEPA QR-code
+   (served by `/sterrenboom/payment_qr/<invoice id>?access_token=…`, since mail clients
+   drop embedded images) and the note that the tickets follow once the payment is
+   processed. The mail does not mention the invoice.
 5. When the transfer arrives, the bank statement line carries the structured
    communication, so Accounting reconciles it against the invoice without manual
    matching. Nothing happens automatically after that: a committee member opens the
