@@ -111,16 +111,18 @@
     }
 
     .o_sb_ticket_foot {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        text-align: center;
         padding: 10px 30px;
         background: #f6f3f8;
         border-top: 1px solid #e6e0ea;
         font-size: 11px;
         color: $sb-muted;
 
+        .o_sb_ticket_refs {
+            margin-bottom: 6px;
+        }
         .o_sb_ticket_powered_by {
+            display: inline-block;
             color: $sb-muted;
             text-decoration: none;
         }

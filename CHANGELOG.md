@@ -3,6 +3,12 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.5.3] — 2026-09-14
+
+### Changed
+- Ticket footer: "powered by Data Forge" is centred, with the order and ticket reference
+  on a line above it.
+
 ## [19.0.4.5.2] — 2026-09-14
 
 ### Fixed
