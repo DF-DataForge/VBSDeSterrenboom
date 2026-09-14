@@ -1,3 +1,5 @@
+import base64
+
 from odoo import models
 
 
@@ -31,6 +33,27 @@ class AccountMove(models.Model):
             self.partner_id,
             silent_errors=True,
         ) or False
+
+    def _sterrenboom_payment_qr_png(self):
+        """The SEPA QR-code as PNG bytes, or ``False`` (see ``_sterrenboom_payment_qr_code``)."""
+        self.ensure_one()
+        data_uri = self._sterrenboom_payment_qr_code()
+        if not data_uri or ',' not in data_uri:
+            return False
+        return base64.b64decode(data_uri.split(',', 1)[1])
+
+    def _sterrenboom_payment_qr_url(self):
+        """Relative URL serving the SEPA QR-code as an image, or ``False``.
+
+        Mail clients drop embedded (data URI) images, so the payment mail links to
+        ``/sterrenboom/payment_qr/<id>`` instead, guarded by the invoice's portal access
+        token. Empty when there is nothing to pay or no (SEPA) bank account.
+        """
+        self.ensure_one()
+        if not self._sterrenboom_payment_qr_code():
+            return False
+        self._portal_ensure_token()
+        return f'/sterrenboom/payment_qr/{self.id}?access_token={self.access_token}'
 
     def _sterrenboom_payment_values(self):
         """Everything the confirmation page and the payment mail need, in one dict."""

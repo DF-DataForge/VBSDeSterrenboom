@@ -243,6 +243,19 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         with self.assertRaises(UserError):
             order.action_sterrenboom_send_tickets()
 
+    def test_payment_instructions_mail_shows_the_qr_code(self):
+        order, registrations = self._book()
+        invoice = order._sterrenboom_invoice_registrations()
+
+        mails = registrations._sterrenboom_send_payment_instructions(force_send=False)
+
+        self.assertTrue(invoice.access_token)
+        self.assertIn(
+            f'/sterrenboom/payment_qr/{invoice.id}?access_token={invoice.access_token}',
+            mails.body_html,
+        )
+        self.assertIn('scan deze QR-code', mails.body_html)
+
     def test_payment_instructions_mail_says_the_tickets_follow(self):
         order, registrations = self._book()
         order._sterrenboom_invoice_registrations()

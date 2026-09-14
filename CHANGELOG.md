@@ -3,6 +3,16 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.8.0] — 2026-09-14
+
+Requires a module upgrade; the migration reloads the payment mail template (UI edits to
+it are lost).
+
+### Added
+- The payment-instructions mail shows the SEPA QR-code. Mail clients drop embedded
+  images, so it is served by `/sterrenboom/payment_qr/<invoice id>`, guarded by the
+  invoice's portal access token (`account.move._sterrenboom_payment_qr_url()`).
+
 ## [19.0.4.7.0] — 2026-09-14
 
 Requires a module upgrade. Everything is sent as the committee mailbox
