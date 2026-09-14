@@ -78,16 +78,15 @@ class SaleOrder(models.Model):
             return empty
 
     def action_sterrenboom_send_tickets(self):
-        """Register the attendees of this order and mail them their tickets, now.
+        """Register the attendees of this order and mail their tickets in one mail.
 
         For the committee to click once the bank transfer for the invoice has been
-        processed; nothing triggers it automatically. The first click releases the
-        hold set by the website flow, which registers the attendees and runs the
-        event's "After each registration" communication (Odoo's confirmation mail with
-        the ticket PDF). Attendees that communication does not cover, and every later
-        click (a resend, e.g. after a bounce), get that same confirmation mail sent
-        directly. The mails are delivered immediately instead of waiting for the mail
-        queue, and the outcome is reported in a notification.
+        processed; nothing triggers it automatically. The attendees are registered
+        without Odoo's per-attendee confirmation mail (the event's "After each
+        registration" communication is marked as done for them instead), and one mail
+        per order goes to the customer with every attendee's ticket PDF attached. The
+        mail is delivered immediately and the outcome reported in a notification. A
+        later click sends the tickets again.
         """
         self.ensure_one()
         registrations = self._sterrenboom_registrations()
@@ -96,50 +95,79 @@ class SaleOrder(models.Model):
         if self.state != 'sale':
             raise UserError(_("Confirm %s before sending its tickets.", self.name))
 
-        Mail = self.env['mail.mail'].sudo()
-        mail_domain = [('model', '=', 'event.registration'), ('res_id', 'in', registrations.ids)]
-        known_mail_ids = set(Mail.search(mail_domain).ids)
-
+        # Recompute / write the attendee state without running the event's
+        # communication: the tickets go out in the single mail below.
+        registrations = registrations.with_context(sterrenboom_skip_event_mails=True)
         if self.sterrenboom_tickets_on_hold:
             self.sterrenboom_tickets_on_hold = False
-            # Recompute the attendee state now: that is what runs the event's
-            # communication for the attendees it covers.
             registrations.flush_recordset(['state'])
         registrations.filtered(lambda reg: reg.state == 'draft').action_confirm()
+        registrations._sterrenboom_mark_event_mails_done()
 
-        # Whoever the communication did not just mail gets the confirmation directly:
-        # events without such a communication, and resends.
-        new_mails = Mail.search(mail_domain).filtered(lambda mail: mail.id not in known_mail_ids)
-        mailed = registrations.filtered(lambda reg: reg.id in set(new_mails.mapped('res_id')))
-        (registrations - mailed)._sterrenboom_send_ticket_mail()
-        new_mails = Mail.search(mail_domain).filtered(lambda mail: mail.id not in known_mail_ids)
-
+        mail = self._sterrenboom_send_tickets_mail(registrations)
         # Deliver now, so the committee sees a bounce here rather than in the mail queue.
-        new_mails.send(auto_commit=False, raise_exception=False)
-        failed = new_mails.exists().filtered(lambda mail: mail.state == 'exception')
-        sent_count = len(new_mails) - len(failed)
+        mail.send(auto_commit=False, raise_exception=False)
 
         self.sterrenboom_tickets_sent_date = fields.Datetime.now()
         names = ', '.join(registrations.mapped('display_name'))
-        if failed:
-            reasons = '; '.join(
-                f"{mail.email_to or mail.recipient_ids.mapped('email')}: "
-                f"{mail.failure_reason or mail.failure_type or _('unknown reason')}"
-                for mail in failed
-            )
+        if mail.exists() and mail.state == 'exception':
             body = _(
-                "Tickets: %(sent)s mail(s) sent, %(failed)s failed (%(reasons)s). "
-                "Attendees: %(names)s.",
-                sent=sent_count, failed=len(failed), reasons=reasons, names=names,
+                "Sending the tickets to %(email)s failed: %(reason)s. Attendees: %(names)s.",
+                email=mail.email_to, names=names,
+                reason=mail.failure_reason or mail.failure_type or _("unknown reason"),
             )
             self.message_post(body=body)
-            return self._sterrenboom_notify(_("Tickets partly sent"), body, 'warning')
+            return self._sterrenboom_notify(_("Tickets not sent"), body, 'danger')
         body = _(
-            "Tickets sent to %(count)s attendee(s) in %(mails)s mail(s): %(names)s.",
-            count=len(registrations), mails=sent_count, names=names,
+            "Tickets for %(count)s attendee(s) sent to %(email)s: %(names)s.",
+            count=len(registrations), email=mail.email_to, names=names,
         )
-        self.message_post(body=body)
+        self.message_post(body=body, attachment_ids=mail.attachment_ids.ids)
         return self._sterrenboom_notify(_("Tickets sent"), body, 'success')
+
+    def _sterrenboom_ticket_attachments(self, registrations):
+        """One full-page ticket PDF per attendee, attached to this order."""
+        Report = self.env['ir.actions.report'].sudo()
+        attachments = self.env['ir.attachment'].sudo()
+        for registration in registrations:
+            pdf, _report_type = Report._render_qweb_pdf(
+                'event.action_report_event_registration_full_page_ticket', registration.ids,
+            )
+            name = f"Ticket - {registration.event_id.name} - {registration.name}.pdf"
+            attachments |= attachments.create({
+                'name': name.replace('/', '-'),
+                'type': 'binary',
+                'raw': pdf,
+                'mimetype': 'application/pdf',
+                'res_model': self._name,
+                'res_id': self.id,
+            })
+        return attachments
+
+    def _sterrenboom_send_tickets_mail(self, registrations):
+        """Queue the tickets mail for this order and return the ``mail.mail``.
+
+        Addressed to the customer (the person who booked); attendee addresses are the
+        fallback when the customer has none.
+        """
+        self.ensure_one()
+        template = self.env.ref('sterrenboom.mail_template_tickets')
+        emails = [self.partner_id.email_formatted] if self.partner_id.email else \
+            registrations._sterrenboom_payment_emails()
+        if not emails:
+            raise UserError(_(
+                "Neither the customer nor the attendees of %s have an email address.", self.name,
+            ))
+        attachments = self._sterrenboom_ticket_attachments(registrations)
+        mail_id = template.sudo().send_mail(
+            self.id,
+            force_send=False,
+            email_values={
+                'email_to': ','.join(emails),
+                'attachment_ids': [(4, attachment.id) for attachment in attachments],
+            },
+        )
+        return self.env['mail.mail'].sudo().browse(mail_id)
 
     def _sterrenboom_notify(self, title, message, level):
         """Sticky popup shown to the user who clicked the button."""

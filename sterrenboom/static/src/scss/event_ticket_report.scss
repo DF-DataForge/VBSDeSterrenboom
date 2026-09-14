@@ -16,13 +16,25 @@
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
 
     .o_sb_ticket_banner {
-        // background-size keeps the artwork's proportions; wkhtmltopdf has no object-fit
-        height: 270px;
-        background: $sb-night center / cover no-repeat;
+        // A box with the flyer header's 2.17:1 ratio (padding in % of the width), so the
+        // whole artwork shows instead of being cropped. Other artwork is centred and
+        // covers the box; wkhtmltopdf has no object-fit, hence a background image.
+        height: 0;
+        padding-bottom: 46%;
+        // Longhand on purpose: wkhtmltopdf's WebKit drops the whole `background`
+        // shorthand when it contains `position / size`, which showed the artwork at
+        // its natural size, cropped to its left part.
+        background-color: $sb-night;
+        background-position: center center;
+        background-repeat: no-repeat;
+        -webkit-background-size: cover;
+        background-size: cover;
         border-bottom: 4px solid $sb-orange;
     }
 
     .o_sb_ticket_banner_text {
+        height: 180px;
+        padding-bottom: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -99,16 +111,18 @@
     }
 
     .o_sb_ticket_foot {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        text-align: center;
         padding: 10px 30px;
         background: #f6f3f8;
         border-top: 1px solid #e6e0ea;
         font-size: 11px;
         color: $sb-muted;
 
+        .o_sb_ticket_refs {
+            margin-bottom: 6px;
+        }
         .o_sb_ticket_powered_by {
+            display: inline-block;
             color: $sb-muted;
             text-decoration: none;
         }
@@ -121,8 +135,9 @@
 
 .o_event_full_page_ticket_responsive_html .o_sb_ticket_card {
     margin: 0 auto;
-    .o_sb_ticket_banner {
-        height: 200px;
+    .o_sb_ticket_banner_text {
+        height: 160px;
+        padding-bottom: 0;
     }
     @media (max-width: 575.98px) {
         .o_sb_ticket_qr {

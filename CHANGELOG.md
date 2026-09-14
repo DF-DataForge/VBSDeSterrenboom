@@ -3,6 +3,36 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.6.0] — 2026-09-14
+
+Requires a module upgrade (new mail template).
+
+### Changed
+- **Send Tickets** now sends **one mail per sales order** to the customer, with every
+  attendee's ticket PDF attached (`sterrenboom.mail_template_tickets`, attachments also
+  kept on the order), instead of Odoo's confirmation mail per attendee. The event's
+  *After each registration* communication is skipped for these attendees and recorded
+  as done, so the mail cron does not send it afterwards.
+
+## [19.0.4.5.3] — 2026-09-14
+
+### Changed
+- Ticket footer: "powered by Data Forge" is centred, with the order and ticket reference
+  on a line above it.
+
+## [19.0.4.5.2] — 2026-09-14
+
+### Fixed
+- Ticket banner in the PDF showed the artwork at natural size, cropped to its left part:
+  wkhtmltopdf ignores the `background` shorthand with `position / size`. Longhand
+  properties (and `-webkit-background-size`) restore the centred, covering banner.
+
+## [19.0.4.5.1] — 2026-09-14
+
+### Fixed
+- Ticket banner: sized to the flyer header's proportions instead of a fixed height, so
+  the artwork's title is no longer cropped.
+
 ## [19.0.4.5.0] — 2026-09-13
 
 Requires a module upgrade; the migration puts the flyer artwork on the event record.

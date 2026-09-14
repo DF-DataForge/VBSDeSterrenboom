@@ -26,18 +26,33 @@ class EventRegistration(models.Model):
         held.state = 'draft'
         held.sale_status = 'to_pay'
 
-    def _sterrenboom_send_ticket_mail(self):
-        """Queue Odoo's registration confirmation, with the ticket PDF, to these attendees.
+    def _update_mail_schedulers(self):
+        """Skip the event's "After each registration" mails when asked to.
 
-        Same template the event's "After each registration" communication uses, so a
-        resend or an event without that communication produces the identical mail.
-        Cancelled and unconfirmed attendees are skipped.
+        *Send Tickets* registers attendees and mails all their tickets in one mail per
+        order, so the per-attendee confirmation Odoo would send here is not wanted.
         """
-        template = self.env.ref('event.event_subscription', raise_if_not_found=False)
-        if not template:
-            return
+        if self.env.context.get('sterrenboom_skip_event_mails'):
+            return None
+        return super()._update_mail_schedulers()
+
+    def _sterrenboom_mark_event_mails_done(self):
+        """Record the event's "After each registration" mails as sent for these attendees.
+
+        The event mail cron otherwise catches up on registered attendees it has not
+        mailed yet, which would send the per-attendee confirmation after all.
+        """
+        MailRegistration = self.env['event.mail.registration'].sudo()
         for registration in self.filtered(lambda reg: reg.state in ('open', 'done')):
-            template.sudo().send_mail(registration.id, force_send=False)
+            schedulers = registration.event_id.event_mail_ids.filtered(
+                lambda scheduler: scheduler.interval_type == 'after_sub'
+            )
+            missing = schedulers - registration.mail_registration_ids.scheduler_id
+            MailRegistration.create([{
+                'registration_id': registration.id,
+                'scheduler_id': scheduler.id,
+                'mail_sent': True,
+            } for scheduler in missing])
 
     def _sterrenboom_invoice(self):
         """The posted customer invoice covering these registrations, if there is one."""

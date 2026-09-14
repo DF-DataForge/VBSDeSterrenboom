@@ -77,5 +77,49 @@
             </field>
         </record>
 
+        <!--
+            The tickets: one mail per sales order, sent by "Send Tickets" on the order,
+            with every attendee's ticket PDF attached (attachments are added by
+            sale.order._sterrenboom_send_tickets_mail, rendered at send time).
+        -->
+        <record id="mail_template_tickets" model="mail.template">
+            <field name="name">Sterrenboom: tickets</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">Je tickets voor {{ ', '.join(object.order_line.registration_ids.event_id.mapped('name')) or object.name }}</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="description">Tickets of a website registration, sent once the payment is processed.</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 14px;">
+                    <t t-set="registrations" t-value="object.order_line.registration_ids.filtered(lambda r: r.state != 'cancel')"/>
+                    <t t-set="events" t-value="registrations.event_id"/>
+
+                    <p>Dag <t t-out="object.partner_id.name or ''">Piet</t>,</p>
+
+                    <p>
+                        Bedankt voor je betaling! In bijlage vind je de tickets voor
+                        <strong t-out="', '.join(events.mapped('name'))">Halloweentocht</strong>:
+                    </p>
+
+                    <ul>
+                        <li t-foreach="registrations" t-as="registration">
+                            <t t-out="registration.name">Piet Van Haute</t>
+                            <t t-if="registration.event_ticket_id">
+                                – <t t-out="registration.event_ticket_id.name">Volwassene</t>
+                            </t>
+                        </li>
+                    </ul>
+
+                    <p>
+                        Toon de QR-code op het ticket aan de inkom, afgedrukt of op je smartphone.
+                    </p>
+
+                    <p>Tot dan!<br/><t t-out="object.company_id.name">Oudercomité</t></p>
+                </div>
+            </field>
+        </record>
+
     </data>
 </odoo>

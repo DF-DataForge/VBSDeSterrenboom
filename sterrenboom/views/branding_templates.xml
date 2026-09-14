@@ -114,12 +114,12 @@
                 <div t-if="not responsive_html and event.ticket_instructions" t-field="event.ticket_instructions"
                      class="o_event_full_page_extra_instructions o_sb_ticket_instructions"/>
 
-                <div class="o_sb_ticket_foot">
-                    <div>
-                        <span t-if="attendee and attendee.sale_order_id">
+                <div class="o_sb_ticket_foot text-center">
+                    <div t-if="attendee and (attendee.sale_order_id or attendee.barcode)" class="o_sb_ticket_refs">
+                        <span t-if="attendee.sale_order_id">
                             Bestelling <span t-field="attendee.sale_order_id.name"/>
                         </span>
-                        <span t-if="attendee and attendee.barcode" class="ms-3">
+                        <span t-if="attendee.barcode" class="ms-3">
                             Ticket <span t-field="attendee.barcode"/>
                         </span>
                     </div>
