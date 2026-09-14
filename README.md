@@ -178,12 +178,13 @@ the attendee details and confirms:
    communication, so Accounting reconciles it against the invoice without manual
    matching. Nothing happens automatically after that: a committee member opens the
    sales order (**Sales → Orders**, or the invoice's *Source Document*) and clicks
-   **Send Tickets**. That registers the attendees, which runs the event's *After each
-   registration* communication — Odoo's confirmation mail with the ticket PDF — and
-   records *Tickets Sent On* on the order. Events without such a communication, and
-   every later click (a resend, e.g. after a bounce), get that mail sent directly. The
-   mails are delivered on the spot and a popup reports what was sent or what failed.
-   The button is available on every confirmed order with attendees.
+   **Send Tickets**. That registers the attendees and sends **one mail per order** to
+   the customer (`sterrenboom.mail_template_tickets`) with every attendee's ticket PDF
+   attached; the attachments stay on the order. The event's *After each registration*
+   communication is skipped for these attendees and marked as done, so Odoo does not
+   also mail each attendee separately. The mail is delivered on the spot, a popup
+   reports the outcome, and *Tickets Sent On* is recorded. Every later click sends the
+   tickets again. The button is available on every confirmed order with attendees.
 
 ### What the committee has to configure once
 

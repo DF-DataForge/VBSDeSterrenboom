@@ -3,6 +3,17 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.6.0] — 2026-09-14
+
+Requires a module upgrade (new mail template).
+
+### Changed
+- **Send Tickets** now sends **one mail per sales order** to the customer, with every
+  attendee's ticket PDF attached (`sterrenboom.mail_template_tickets`, attachments also
+  kept on the order), instead of Odoo's confirmation mail per attendee. The event's
+  *After each registration* communication is skipped for these attendees and recorded
+  as done, so the mail cron does not send it afterwards.
+
 ## [19.0.4.5.3] — 2026-09-14
 
 ### Changed

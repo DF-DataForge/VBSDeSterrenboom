@@ -178,7 +178,14 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         self.assertFalse(registrations.mail_registration_ids.filtered('mail_sent'))
         self.assertFalse(self._ticket_mails(registrations))
 
-    def test_send_tickets_registers_the_attendees_and_mails_them(self):
+    def _tickets_mails(self, order):
+        """The tickets mails of an order (one per click on Send Tickets)."""
+        return self.env['mail.mail'].search([
+            ('model', '=', 'sale.order'),
+            ('res_id', '=', order.id),
+        ])
+
+    def test_send_tickets_registers_the_attendees_and_mails_one_mail(self):
         order, registrations = self._book()
         order._sterrenboom_invoice_registrations()
 
@@ -188,15 +195,24 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         self.assertTrue(order.sterrenboom_tickets_sent_date)
         self.assertEqual(set(registrations.mapped('state')), {'open'})
         self.assertEqual(set(registrations.mapped('sale_status')), {'sold'})
-        # sent by the event's own "After each registration" communication
+        # one mail to the customer with a ticket per attendee attached
+        mails = self._tickets_mails(order)
+        self.assertEqual(len(mails), 1)
+        self.assertIn('piet@example.com', mails.email_to)
+        self.assertIn('Testtocht', mails.subject)
+        self.assertIn('Mila Van Haute', mails.body_html)
+        self.assertEqual(len(mails.attachment_ids), 2)
+        self.assertTrue(all(name.endswith('.pdf') for name in mails.attachment_ids.mapped('name')))
+        # Odoo's per-attendee confirmation mail was neither sent nor left for the cron
+        self.assertFalse(self._ticket_mails(registrations))
         self.assertEqual(len(registrations.mail_registration_ids.filtered('mail_sent')), 2)
         # delivered on the spot and reported in a popup
         self.assertEqual(action['tag'], 'display_notification')
         self.assertEqual(action['params']['type'], 'success')
-        self.assertIn('2 attendee(s) in 2 mail(s)', action['params']['message'])
-        self.assertIn('Piet Van Haute', action['params']['message'])
+        self.assertIn('2 attendee(s)', action['params']['message'])
+        self.assertIn('piet@example.com', action['params']['message'])
 
-    def test_send_tickets_without_event_communication_mails_the_confirmation(self):
+    def test_send_tickets_without_event_communication(self):
         self.event.event_mail_ids.unlink()
         order, registrations = self._book()
         order._sterrenboom_invoice_registrations()
@@ -204,21 +220,22 @@ class TestRegistrationPayment(AccountTestInvoicingCommon):
         action = order.action_sterrenboom_send_tickets()
 
         self.assertEqual(set(registrations.mapped('state')), {'open'})
+        mails = self._tickets_mails(order)
+        self.assertEqual(len(mails), 1)
+        self.assertEqual(len(mails.attachment_ids), 2)
         self.assertEqual(action['params']['type'], 'success')
-        self.assertIn('2 attendee(s) in 2 mail(s)', action['params']['message'])
 
     def test_send_tickets_again_resends_them(self):
         order, registrations = self._book()
         order._sterrenboom_invoice_registrations()
         order.action_sterrenboom_send_tickets()
-        first_sent_date = order.sterrenboom_tickets_sent_date
 
         action = order.action_sterrenboom_send_tickets()
 
         self.assertEqual(set(registrations.mapped('state')), {'open'})
+        self.assertEqual(len(self._tickets_mails(order)), 2)
         self.assertEqual(action['params']['type'], 'success')
-        self.assertIn('2 attendee(s) in 2 mail(s)', action['params']['message'])
-        self.assertGreaterEqual(order.sterrenboom_tickets_sent_date, first_sent_date)
+        self.assertFalse(self._ticket_mails(registrations))
 
     def test_send_tickets_needs_a_confirmed_order(self):
         order, _registrations = self._book()
