@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Church of Sinners – A Halloween Experience, Friday 23 October 2026.
+            Same evening and venue as the Halloweentocht, for adults only: one ticket type.
+            Created once at install/upgrade (noupdate): the committee edits the live
+            record in Events afterwards, and upgrades will not overwrite those edits.
+            All datetimes are stored in UTC; Belgium is on CEST (UTC+2) until 25/10/2026.
+            The venue partner is shared with the Halloweentocht (event_halloweentocht_data.xml
+            loads first).
+        -->
+
+        <record id="event_church_of_sinners_2026" model="event.event">
+            <field name="name">Church of Sinners</field>
+            <field name="subtitle">A Halloween Experience – DJ Brightside &amp; DJ Ira Mira</field>
+            <field name="date_tz">Europe/Brussels</field>
+            <!-- 23/10/2026 20:00 – 24/10/2026 02:00 Europe/Brussels -->
+            <field name="date_begin">2026-10-23 18:00:00</field>
+            <field name="date_end">2026-10-24 00:00:00</field>
+            <field name="address_id" ref="partner_kerk_wortegem"/>
+            <field name="seats_limited" eval="False"/>
+            <field name="website_published" eval="True"/>
+            <field name="sterrenboom_page_view_id" ref="event_page_church_of_sinners"/>
+            <field name="sterrenboom_header_image" type="base64"
+                   file="sterrenboom/static/src/img/church_of_sinners.jpg"/>
+            <field name="description" type="html">
+                <div class="oe_structure">
+                    <p class="lead">
+                        DJ Brightside &amp; DJ Ira Mira brengen op vrijdag 23 oktober de disco naar
+                        de kerk van Wortegem: Church of Sinners – A Halloween Experience.
+                    </p>
+                    <p>
+                        Van 20.00 tot 02.00 uur: disco, nu disco, funk, soul, house &amp;
+                        electronic. Verwacht classics &amp; guilty pleasures. Kom verkleed!
+                    </p>
+                    <p>Enkel voor volwassenen. Tickets € 8.</p>
+                </div>
+            </field>
+        </record>
+
+        <record id="event_church_of_sinners_2026_ticket_adult" model="event.event.ticket">
+            <field name="event_id" ref="event_church_of_sinners_2026"/>
+            <field name="sequence">1</field>
+            <field name="name">Volwassene</field>
+            <field name="description">Toegang tot Church of Sinners – A Halloween Experience, van 20.00 tot 02.00 uur. Enkel voor volwassenen.</field>
+            <field name="price">8.0</field>
+            <!-- Registrations close when the doors open (23/10/2026 20:00 Europe/Brussels) -->
+            <field name="end_sale_datetime">2026-10-23 18:00:00</field>
+        </record>
+
+    </data>
+</odoo>

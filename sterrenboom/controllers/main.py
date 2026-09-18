@@ -14,6 +14,7 @@ SESSION_KEY = 'sterrenboom_registration_ids'
 # Fallback flyer header for the Halloweentocht page when the event record carries no
 # Header Image: a web-sized JPEG of "Header halloweentocht.png" from the repository root.
 HEADER_IMAGE = 'sterrenboom/static/src/img/halloweentocht.jpg'
+HEADER_IMAGE_PAGE = 'sterrenboom.event_page_halloweentocht'
 
 
 class SterrenboomWebsiteEventController(WebsiteEventSaleController):
@@ -38,7 +39,8 @@ class SterrenboomWebsiteEventController(WebsiteEventSaleController):
         """URL of the event's header artwork, or ``False`` when there is none.
 
         The Header Image on the event record wins (the tickets use the same one); the
-        static Halloweentocht flyer is the fallback.
+        static Halloweentocht flyer is the fallback, for the Halloweentocht page only:
+        other events (Church of Sinners) show their typographic title instead.
         """
         event_sudo = event.sudo()
         if event_sudo.sterrenboom_header_image:
@@ -46,6 +48,8 @@ class SterrenboomWebsiteEventController(WebsiteEventSaleController):
                 f'/web/image/event.event/{event.id}/sterrenboom_header_image'
                 f'?unique={event_sudo.write_date.timestamp():.0f}'
             )
+        if event_sudo.sterrenboom_page_view_id.key != HEADER_IMAGE_PAGE:
+            return False
         try:
             file_path(HEADER_IMAGE, filter_ext=('.jpg', '.jpeg', '.png'))
         except (FileNotFoundError, ValueError):

@@ -1,0 +1,47 @@
+// Church of Sinners – A Halloween Experience event page
+// (sterrenboom.event_page_church_of_sinners). Layout from event_page.scss with the
+// poster's palette: deep space blue, glitter pink and aged paper. Everything is scoped
+// under .o_sterrenboom_church so it cannot leak into other pages.
+
+.o_sterrenboom_church {
+    $sb-night: #0b0d24;
+    $sb-purple: #2c1548;
+    $sb-pink: #d9457a;
+    $sb-pink-dark: #a3204f;
+    $sb-paper: #f3e6cc;
+    $sb-paper-dark: #dcc9a3;
+
+    @include sb-event-page(
+        $night: $sb-night,
+        $purple: $sb-purple,
+        $accent: $sb-pink,
+        $accent-dark: $sb-pink-dark,
+        $cream: $sb-paper,
+        $cream-dark: $sb-paper-dark
+    );
+
+    // Glitter-lettering feel for the typographic fallback title.
+    .o_sb_title {
+        background: linear-gradient(180deg, #f6a5c1 0%, $sb-pink 45%, $sb-pink-dark 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: none;
+    }
+
+    .o_sb_quote {
+        padding-left: 1rem;
+        border-left: 4px solid $sb-pink;
+        font-size: 1.05rem;
+    }
+
+    .o_sb_poster {
+        display: block;
+        width: 100%;
+        max-width: 24rem;
+        height: auto;
+        margin: 0 auto;
+        border-radius: 0.75rem;
+        box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
+    }
+}

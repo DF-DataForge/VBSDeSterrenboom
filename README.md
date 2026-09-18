@@ -7,7 +7,8 @@
 Odoo 19 addon for managing the parent committee (oudercomité) of VBS De Sterrenboom:
 a member register with committee roles, event planning with attendee tracking,
 a status workflow, chatter and scheduled activities, and custom website pages for
-events published through the Odoo Events app (currently the *Halloweentocht*).
+events published through the Odoo Events app (currently the *Halloweentocht* and
+*Church of Sinners*).
 
 ## Repository layout
 
@@ -34,15 +35,20 @@ VBSDeSterrenboom/            <- add THIS folder to addons_path
 │   │   ├── sterrenboom_menus.xml
 │   │   ├── event_event_views.xml
 │   │   ├── event_templates.xml                <- confirmation page payment panel
-│   │   └── event_halloweentocht_templates.xml <- the Halloweentocht web page
+│   │   ├── event_halloweentocht_templates.xml <- the Halloweentocht web page
+│   │   └── event_church_of_sinners_templates.xml <- the Church of Sinners web page
 │   ├── data/
 │   │   ├── mail_template_data.xml             <- payment instructions mail
-│   │   └── event_halloweentocht_data.xml      <- the event, its tickets and location
+│   │   ├── event_halloweentocht_data.xml      <- the event, its tickets and location
+│   │   └── event_church_of_sinners_data.xml   <- the adults-only party, same evening
 │   ├── migrations/                 <- upgrade scripts per manifest version
 │   ├── security/
 │   │   ├── sterrenboom_groups.xml
 │   │   └── ir.model.access.csv
-│   ├── static/src/scss/event_halloweentocht.scss
+│   ├── static/src/scss/
+│   │   ├── event_page.scss                    <- shared layout of the event pages
+│   │   ├── event_halloweentocht.scss          <- Halloweentocht palette
+│   │   └── event_church_of_sinners.scss       <- Church of Sinners palette
 │   ├── demo/
 │   ├── tests/
 │   └── static/description/icon.png
@@ -244,9 +250,39 @@ shown.
 After upgrading the module: **Events → Halloweentocht → Go to Website** opens the page.
 To add the flyer image as cover, use the website editor's cover options on that page.
 
+## Church of Sinners – A Halloween Experience
+
+`data/event_church_of_sinners_data.xml` creates the adults-only party of the same
+evening from the poster, once (`noupdate`) like the Halloweentocht, so the committee edits
+it afterwards in **Events**:
+
+| | |
+| --- | --- |
+| When | Friday 23 October 2026, 20:00 – 02:00 (Europe/Brussels) |
+| Where | Kerk van Wortegem, 9790 Wortegem-Petegem (the same venue record as the Halloweentocht) |
+| Line-up | DJ Brightside & DJ Ira Mira: disco, nu disco, funk, soul, house & electronic |
+| Tickets | one ticket type, *Volwassene* € 8; adults only. Registrations close when the doors open (23 October 2026 at 20:00) — the poster names no deadline, adjust it on the ticket if needed |
+| Website | published, custom page `sterrenboom.event_page_church_of_sinners` |
+
+The registration flow is exactly the Halloweentocht one: the standard ticket modal from
+`website_event.layout`, then sales order, posted invoice, structured communication and
+SEPA QR-code on the confirmation page and by mail, and **Send Tickets** on the order once
+the transfer is in (see *Registration and payment flow*).
+
+The page (`views/event_church_of_sinners_templates.xml`) has the same construction as the
+Halloweentocht page — hero with the header artwork, key facts, a *Verwacht* panel with
+the poster, the registration panel and *Praktisch* — in the poster's palette. Both pages
+share their layout through the `sb-event-page` mixin in `static/src/scss/event_page.scss`;
+each page only sets its colours. The header artwork,
+`static/src/img/church_of_sinners.jpg` (the title band of the poster, 1032 px wide), is
+loaded on the event record as *Header Image*, so it also appears on the tickets; the full
+poster, `church_of_sinners_poster.jpg`, is shown on the page. When the event has no Header
+Image the page falls back to a typographic title: the static Halloweentocht JPEG fallback
+is reserved for the Halloweentocht page.
+
 ## Branding
 
-Every outgoing mail, the ticket PDF, the Halloweentocht page and the registration
+Every outgoing mail, the ticket PDF, the Halloweentocht and Church of Sinners pages and the registration
 confirmation page end with *powered by Data Forge*: the Data Forge logo
 (`static/src/img/dataforge_logo.png`) linking to <https://www.data-forge.be>. Web pages
 call the QWeb template `sterrenboom.powered_by_data_forge`; mails get the footer from

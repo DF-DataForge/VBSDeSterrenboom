@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Website page for the "Church of Sinners – A Halloween Experience" event.
+        Same construction as the Halloweentocht page (event_halloweentocht_templates.xml):
+        rendered by the event's "Custom Website Page" field instead of the standard
+        website_event page. Dates, tickets, prices, location and organiser come from
+        the event.event record; the texts mirror the poster. The registration modal is
+        provided by website_event.layout, so the standard ticket selection, attendee form,
+        invoicing and payment mail keep working exactly as for the Halloweentocht.
+    -->
+    <template id="event_page_church_of_sinners" name="Sterrenboom: Church of Sinners event page">
+        <t t-call="website_event.layout">
+            <t t-set="hide_submenu" t-value="True"/>
+            <t t-set="hide_register_cta" t-value="True"/>
+            <!-- Show the event page on its own: no website navbar above it. -->
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="page_tickets" t-value="event.event_ticket_ids.sorted('sequence')"/>
+            <t t-set="page_deadlines" t-value="page_tickets.filtered('end_sale_datetime').mapped('end_sale_datetime')"/>
+            <t t-set="page_deadline" t-value="page_deadlines and min(page_deadlines)"/>
+            <t t-set="modal_target" t-value="'#modal_%s_registration' % ('slot' if event.is_multi_slots else 'ticket')"/>
+
+            <div class="o_sterrenboom_church">
+
+                <!-- Header -->
+                <section class="o_sb_hero">
+                    <div class="container">
+                        <p class="o_sb_organisers text-uppercase small mb-1">
+                            DJ Brightside &amp; DJ Ira Mira
+                        </p>
+                        <p class="small mb-4">A Halloween Experience</p>
+                        <t t-if="sterrenboom_header_image">
+                            <!-- The poster header carries the title artwork; keep an h1 for
+                                 screen readers and search engines. -->
+                            <img t-att-src="sterrenboom_header_image" class="o_sb_header_img"
+                                 t-attf-alt="#{event.name} – A Halloween Experience"/>
+                            <h1 class="visually-hidden" t-field="event.name"/>
+                        </t>
+                        <t t-else="">
+                            <h1 class="o_sb_title" t-field="event.name"/>
+                            <h2 class="o_sb_subtitle mt-2">A Halloween Experience</h2>
+                        </t>
+                        <div class="o_sb_date_badge">
+                            <i class="fa fa-calendar me-2" role="img" aria-label="Datum"/>
+                            <t t-out="event.date_begin"
+                               t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'EEEE d/MM'}"/>
+                            ·
+                            <t t-out="event.date_begin"
+                               t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH:mm'}"/>
+                            –
+                            <t t-out="event.date_end"
+                               t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH:mm'}"/>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Key facts -->
+                <section class="o_sb_facts pb-5">
+                    <div class="container">
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-clock-o mb-2" role="img" aria-label="Uur"/>
+                                    <div class="o_sb_fact_label">Deuren</div>
+                                    <div class="o_sb_fact_value">
+                                        <t t-out="event.date_begin"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH.mm'}"/>
+                                        –
+                                        <t t-out="event.date_end"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH.mm'}"/>
+                                        uur
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-headphones mb-2" role="img" aria-label="DJ's"/>
+                                    <div class="o_sb_fact_label">DJ's</div>
+                                    <div class="o_sb_fact_value">DJ Brightside &amp; DJ Ira Mira</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-ticket mb-2" role="img" aria-label="Prijs"/>
+                                    <div class="o_sb_fact_label">Prijs</div>
+                                    <div class="o_sb_fact_value">
+                                        <t t-foreach="page_tickets" t-as="ticket">
+                                            <div>
+                                                <t t-out="ticket.name"/>
+                                                <t t-if="ticket.price">
+                                                    € <t t-out="ticket.price"
+                                                         t-options="{'widget': 'float', 'precision': 0}"/>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        <div class="small fw-normal">enkel volwassenen</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="o_sb_fact text-center">
+                                    <i class="fa fa-map-marker mb-2" role="img" aria-label="Locatie"/>
+                                    <div class="o_sb_fact_label">Waar</div>
+                                    <div class="o_sb_fact_value">
+                                        <!-- t-field: the many2one widget reads the partner with sudo,
+                                             so public visitors can see the venue name -->
+                                        <span t-if="event.address_id" t-field="event.address_id"/>
+                                        <t t-else="">Kerk van Wortegem</t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Programme + registration -->
+                <section class="pb-5">
+                    <div class="container">
+                        <div class="row g-4">
+
+                            <div class="col-12 col-lg-6">
+                                <div class="o_sb_panel h-100">
+                                    <h2 class="h3 mb-4">
+                                        <i class="fa fa-star me-2" role="img" aria-label="Verwacht"/>Verwacht
+                                    </h2>
+                                    <ul class="o_sb_included list-unstyled mb-4">
+                                        <li><i class="fa fa-music" role="img" aria-label="Muziek"/>Disco, nu disco, funk, soul, house &amp; electronic</li>
+                                        <li><i class="fa fa-heart" role="img" aria-label="Classics"/>Classics &amp; guilty pleasures</li>
+                                        <li><i class="fa fa-headphones" role="img" aria-label="DJ's"/>DJ Brightside &amp; DJ Ira Mira</li>
+                                        <li><i class="fa fa-university" role="img" aria-label="Kerk"/>De kerk van Wortegem als danstempel</li>
+                                        <li><i class="fa fa-user-secret" role="img" aria-label="Verkleed"/>Kom verkleed – come in costume</li>
+                                        <li><i class="fa fa-ban" role="img" aria-label="Volwassenen"/>Enkel voor volwassenen</li>
+                                    </ul>
+                                    <p class="o_sb_quote fst-italic mb-4">
+                                        “We're all just a bunch of sinners, but we do the best we can”
+                                        <span class="d-block small text-muted">– Dolly Parton</span>
+                                    </p>
+                                    <img src="/sterrenboom/static/src/img/church_of_sinners_poster.jpg"
+                                         class="o_sb_poster" loading="lazy"
+                                         alt="Affiche Church of Sinners – A Halloween Experience"/>
+                                    <p class="small text-center text-muted mt-3 mb-0">
+                                        Wortegem, we're bringing the disco to church.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6">
+                                <div id="inschrijven" class="o_sb_panel h-100">
+                                    <h2 class="h3 mb-2">
+                                        <i class="fa fa-pencil-square-o me-2" role="img" aria-label="Inschrijven"/>Schrijf hier in
+                                    </h2>
+                                    <p t-if="page_deadline" class="text-muted mb-4">
+                                        Inschrijven kan tot
+                                        <b t-out="page_deadline"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'EEEE d MMMM y, HH:mm'}"/>.
+                                    </p>
+
+                                    <div class="d-flex flex-column gap-2 mb-4">
+                                        <div t-foreach="page_tickets" t-as="ticket" class="o_sb_ticket">
+                                            <div class="o_sb_ticket_name">
+                                                <div class="fw-bold" t-out="ticket.name"/>
+                                                <div t-if="ticket.is_expired" class="small text-danger">Inschrijvingen afgesloten</div>
+                                                <div t-elif="ticket.is_sold_out" class="small text-danger">Volzet</div>
+                                            </div>
+                                            <div t-if="ticket.price" class="o_sb_ticket_price">
+                                                € <t t-out="ticket.price"
+                                                     t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div t-if="registration_error_code == 'insufficient_seats'" class="alert alert-danger" role="alert">
+                                        Inschrijven mislukt: deze tickets zijn niet meer beschikbaar.
+                                    </div>
+                                    <div t-if="registration_error_code == 'recaptcha_failed'" class="alert alert-danger" role="alert">
+                                        Inschrijven mislukt: Google reCaptcha heeft verdachte activiteit gedetecteerd.
+                                    </div>
+
+                                    <t t-if="event.event_registrations_open">
+                                        <button type="button" class="btn o_sb_register_btn w-100"
+                                                data-bs-toggle="modal" t-att-data-bs-target="modal_target">
+                                            <i class="fa fa-ticket me-2" role="img" aria-label="Tickets"/>Inschrijven
+                                        </button>
+                                        <p class="small text-muted mt-3 mb-0">
+                                            Kies het aantal tickets en vul per deelnemer naam, e-mailadres en
+                                            telefoonnummer in. Dit feest is enkel voor volwassenen. Je betaalt
+                                            niet via deze website: na het bevestigen krijg je meteen – en ook
+                                            per e-mail – het bedrag, het rekeningnummer en de gestructureerde
+                                            mededeling voor je overschrijving. Je tickets volgen per e-mail
+                                            zodra je betaling verwerkt is.
+                                        </p>
+                                    </t>
+                                    <t t-else="" t-call="website_event.registration_template"/>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Practical information -->
+                <section class="pb-5">
+                    <div class="container">
+                        <div class="o_sb_panel">
+                            <h2 class="h3 mb-4">
+                                <i class="fa fa-info-circle me-2" role="img" aria-label="Praktisch"/>Praktisch
+                            </h2>
+                            <div class="row g-4">
+                                <div class="col-12 col-md-4">
+                                    <h3 class="h6 text-uppercase text-muted">Wanneer</h3>
+                                    <div class="fw-bold text-capitalize"
+                                         t-out="event.date_begin"
+                                         t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'EEEE d MMMM y'}"/>
+                                    <div>
+                                        <t t-out="event.date_begin"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH:mm'}"/>
+                                        –
+                                        <t t-out="event.date_end"
+                                           t-options="{'widget': 'datetime', 'tz_name': event.date_tz, 'format': 'HH:mm'}"/>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <a t-if="google_url" t-att-href="google_url" target="_blank" rel="noopener" class="me-3">
+                                            <i class="fa fa-google me-1" role="img" aria-label="Google"/>Google Agenda
+                                        </a>
+                                        <a t-if="iCal_url" t-att-href="iCal_url">
+                                            <i class="fa fa-calendar-plus-o me-1" role="img" aria-label="iCal"/>iCal / Outlook
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <h3 class="h6 text-uppercase text-muted">Waar</h3>
+                                    <t t-if="event.address_id">
+                                        <div class="fw-bold" t-field="event.address_id"/>
+                                        <div t-field="event.address_id"
+                                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                                        <a t-att-href="event._google_map_link()" target="_blank" rel="noopener" class="small">
+                                            <i class="fa fa-location-arrow me-1" role="img" aria-label="Route"/>Routebeschrijving
+                                        </a>
+                                    </t>
+                                    <div t-else="" class="fw-bold">Kerk van Wortegem</div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <h3 class="h6 text-uppercase text-muted">Organisatie</h3>
+                                    <div class="fw-bold">DJ Brightside &amp; DJ Ira Mira</div>
+                                    <div class="small">Tickets via het oudercomité van VBS De Sterrenboom</div>
+                                    <div t-if="event.organizer_id" class="small mt-2"
+                                         t-field="event.organizer_id"
+                                         t-options="{'widget': 'contact', 'fields': ['email', 'phone']}"/>
+                                </div>
+                            </div>
+
+                            <div t-if="event.description" class="mt-4 pt-4 border-top"
+                                 t-field="event.description"/>
+                        </div>
+                    </div>
+                </section>
+
+                <t t-call="sterrenboom.powered_by_data_forge"/>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>
