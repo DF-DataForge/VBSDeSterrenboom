@@ -3,6 +3,30 @@
 All notable changes to the `sterrenboom` addon. Versions follow the Odoo manifest
 convention `19.0.<major>.<minor>.<patch>`.
 
+## [19.0.4.11.0] — 2026-09-18
+
+Requires a module upgrade; the upgrade creates the new event (a `noupdate` record that
+does not exist yet is created, existing ones are left alone).
+
+### Added
+- **Church of Sinners – A Halloween Experience** (`data/event_church_of_sinners_data.xml`):
+  the adults-only party of Friday 23 October 2026, 20:00 – 02:00, in the Kerk van
+  Wortegem with DJ Brightside & DJ Ira Mira. One ticket type, *Volwassene* € 8;
+  registrations close when the doors open. Published with its own custom page
+  (`sterrenboom.event_page_church_of_sinners`, `views/event_church_of_sinners_templates.xml`)
+  built like the Halloweentocht page, so the registration, invoicing, payment mail and
+  Send Tickets flow is exactly the same. The title band of the poster is loaded as
+  *Header Image* (`static/src/img/church_of_sinners.jpg`, also on the tickets) and the
+  full poster (`church_of_sinners_poster.jpg`) is shown on the page.
+
+### Changed
+- The event pages share their layout through the `sb-event-page` SCSS mixin in
+  `static/src/scss/event_page.scss`; `event_halloweentocht.scss` and the new
+  `event_church_of_sinners.scss` only set their palette. The rendered Halloweentocht page
+  is unchanged.
+- The static Halloweentocht JPEG is only used as header fallback on the Halloweentocht
+  page; other custom pages without a *Header Image* show their typographic title.
+
 ## [19.0.4.10.0] — 2026-09-14
 
 Requires a module upgrade; the migration reloads both mail templates (UI edits to them
